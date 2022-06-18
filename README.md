@@ -51,7 +51,7 @@ python node.pyc {port number}(optional)
 BlockChain -> {
   Your host port is 258
 }
-Rockie >>                                                                                                                                                                                                                                                                                                                                                                                                                                         
+Node >>                                                                                                                                                                                                                                                                                                                                                                                                                                         
 ```
 You have now started the node.
 
@@ -59,7 +59,7 @@ You have now started the node.
  (Now there will be automatic sync sequence.
 Please wait until syncing is complete.)
 ```bash
-Rockie >> add
+Node >> add
 ~~-Add-New-Peer-~~
 I.P. : {ip} 
 PORT : {port}
@@ -68,12 +68,12 @@ Peer added to list!
 Congratulations now you have successfully joined the network and now you can issue tx's and participate in the network.
 ## Usage
 To issue a tx
-```python
-Rockie >> tx
+```bash
+Node >> tx
 ```
 To set coinbase:
 ```bash
-Rockie >> coinbase
+Node >> coinbase
 ```
 ## Contributing
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
