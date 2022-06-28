@@ -278,7 +278,7 @@ def send():
             try:
                 sc.connect(("department-bucks.at.playit.gg",60622))
             except:
-                print(f"ERROR : Unable to connect to given ip::port combination.")
+                print(f"ERROR : Unable to connect to default peer.")
                 continue
             allc[sc]=sc
             t1=threading.Thread(target=client_handeler,args=(sc,))
