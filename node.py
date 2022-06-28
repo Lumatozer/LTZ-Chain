@@ -279,7 +279,6 @@ def send():
             try:
                 sc.connect(("department-bucks.at.playit.gg",60622))
             except:
-                traceback.print_exc()
                 print(f"ERROR : Unable to connect to default peer.")
                 continue
             allc[sc]=sc
