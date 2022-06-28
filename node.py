@@ -34,6 +34,7 @@ true_lumps=[]
 print(logovar)
 
 
+from ast import arg
 import socket, threading, random,traceback,sys,time
 from essentials import *
 
@@ -221,6 +222,18 @@ def client_handeler(client):
             break
 
 
+def mine_empty():
+    tx=tx_base([])
+    start=time.time()
+    block=mine(tx,node_addr,coinbase)
+    if get_building_hash()==block["prev"]:
+        print(arrow_msg_gen("Miner Thread",f"Block Mined Successfully!\n Time Taken : {time.time()-start}"))
+        broadcast(double_quote(block),"block")
+        print(f"Mined Block Validity : {verify_block(double_quote(block))}")
+    else:
+        print(arrow_msg_gen("Miner Thread","Block Mined late."))
+
+
 def send():
     global allc
     global used
@@ -284,20 +297,11 @@ def send():
         elif raw_msg=="balance" or raw_msg=="bal":
             print(f"Blockchain{' -> {'}\n Address : {node_addr}\n Balance : {balance(node_addr)} LTZ"+"\n}")
         elif raw_msg=="mine_empty":
-            tx=tx_base([])
-            start=time.time()
-            block=mine(tx,node_addr,coinbase)
-            if get_building_hash()==block["prev"]:
-                print(arrow_msg_gen("Miner Thread",f"Block Mined Successfully!\n Time Taken : {time.time()-start}"))
-                broadcast(double_quote(block),"block")
-                print(f"Mined Block Validity : {verify_block(double_quote(block))}")
-            else:
-                print(arrow_msg_gen("Miner Thread","Block Mined late."))
+            mine_thread=threading.Thread(target=mine_empty).start()
         elif raw_msg=="address":
             print(node_addr)
         else:
             broadcast(raw_msg,append=True)
-
 
 def loop_mine_thread():
     global true_lumps
