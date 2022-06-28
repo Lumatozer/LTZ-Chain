@@ -306,9 +306,9 @@ def loop_mine_thread():
             if len(true_lumps)>=5:
                 tx=tx_base(true_lumps[0:5])
                 del true_lumps[:5]
-            if len(true_lumps)>=10:
-                tx=tx_base(true_lumps[0:10])
-                del true_lumps[:10]
+            if len(true_lumps)>=7:
+                tx=tx_base(true_lumps[0:7])
+                del true_lumps[:7]
             elif len(true_lumps)<5:
                 tx=tx_base(true_lumps)
                 true_lumps=[]

@@ -33,13 +33,13 @@ World's first fully decentralized light-weight multi-purpose python based blockc
 5. Secure syncing and verification methods to prevent foul blocks from being generated.
 6. **Allowing forking and multiple branches** for different blockchain based projects to parallelly use.
 7. Calculating branches with the most efficiency and very less disk and ram usage with the estimates of **max peak of 130 mb of ram usage at 1 million blocks**.
-8. Multiple lumps per block supported with a **max block size limit of 100 kilobytes**.(usually 5 lumps ber block at max but any number allowed as long as it does not go above the block limit.)
+8. Multiple lumps per block supported with a **max block size limit of 100 kilobytes**.(usually 5 lumps ber block at max but any number allowed as long as it does not go above the block limit)
 9. Extra coinbase field in which block-miner can store text or link pointing at NFTS making sure they remain permanent and untampered on the blockchain.
 10. All types of issues like bazantine's generals problem or longest chain rule etc. have been implemented to make sure that there is no way to exploit the chain or tamper any data.
-11. **CPU based PoW mining** (subject to changes) and reward of 50 LTZ per block mined.(mining empty blocks are also permitted on the network.)
+11. **CPU based PoW mining** (subject to changes) and reward of 50 LTZ per block mined.(mining empty blocks are also permitted on the network)
 12. Everything precompiled in .pyc file formats to speed-up CPU-based processing. You can also git clone .py files from the repo and use those instead if you wish to.
 13. **No external dependencies have been used into making this project therefore eliminating the frustration of installing libraries.**
-14. People connected in the network can also send messages on the network which can be seen by everyone on the network replicating the behaviour of a p2p chat application at the same time cause why not?(although this feature will most probably be removed soon in further versions.)
+14. People connected in the network can also send messages on the network which can be seen by everyone on the network replicating the behaviour of a p2p chat application at the same time cause why not?(although this feature will most probably be removed soon in further versions)
 
 ## Installation
 ```bash
@@ -92,7 +92,7 @@ To manually sync (this will make you sync with your first connected peer/node ag
 ```bash
 Node >> sync
 ```
-Typing anything else except these commands will send it as a msg to all nodes.
+Typing anything else except these commands will send it as a message to all nodes.
 # Others
 Keypairs are stored in the same directory as the node.pyc file as "den.alukeys".
 ### To change the keys.
