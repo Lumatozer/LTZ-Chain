@@ -234,6 +234,14 @@ def mine_empty():
         print(arrow_msg_gen("Miner Thread","Block Mined late."))
 
 
+def loop_mine():
+    try:
+        while True:
+            mine_empty()
+    except KeyboardInterrupt:
+        pass 
+
+
 def send():
     global allc
     global used
@@ -296,9 +304,9 @@ def send():
                 print("Broadcasted")
         elif raw_msg=="balance" or raw_msg=="bal":
             print(f"Blockchain{' -> {'}\n Address : {node_addr}\n Balance : {balance(node_addr)} LTZ"+"\n}")
-        elif raw_msg=="mine_empty":
-            mine_thread=threading.Thread(target=mine_empty).start()
-        elif raw_msg=="address":
+        elif raw_msg=="mine loop":
+            threading.Thread(target=loop_mine).start()
+        elif raw_msg=="address" or raw_msg=="addr":
             print(node_addr)
         else:
             broadcast(raw_msg,append=True)
