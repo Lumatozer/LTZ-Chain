@@ -315,7 +315,7 @@ def loop_mine_thread():
             start=time.time()
             block=mine(tx,node_addr,coinbase)
             if get_building_hash()==block["prev"]:
-                print(arrow_msg_gen("Miner Thread",f" Block Mined Successfully!\n Time Taken : {time.time()-start}"))
+                print(arrow_msg_gen("Miner Thread",f"Block Mined Successfully!\n Time Taken : {time.time()-start}"))
                 broadcast(double_quote(block),"block")
             else:
                 print(arrow_msg_gen("Miner Thread","Block Mined late."))
