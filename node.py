@@ -274,6 +274,26 @@ def send():
                     lb=get_building_hash()
                 msg=double_quote(msgen(lb,uid,"sync_req"))
                 sync_client.send(msg.encode())
+        elif raw_msg=="default peer":
+            try:
+                sc.connect(("department-bucks.at.playit.gg",60622))
+            except:
+                print(f"ERROR : Unable to connect to given ip::port combination.")
+                continue
+            allc[sc]=sc
+            t1=threading.Thread(target=client_handeler,args=(sc,))
+            t1.start()
+            print("Peer added to list!")
+            if firstpeer==True:
+                firstpeer==False
+                sync_client=next(iter(allc))
+                uid=uidgen()
+                if is_chain_empty():
+                    lb=0
+                else:
+                    lb=get_building_hash()
+                msg=double_quote(msgen(lb,uid,"sync_req"))
+                sync_client.send(msg.encode())
         elif raw_msg=="sync":
             sync_client=next(iter(allc))
             uid=uidgen()
