@@ -131,8 +131,9 @@ def client_handeler(client):
                 used.append(msg_filter(received_msg,"uid"))
                 data=msg_filter(received_msg, "data")
                 if msg_filter(received_msg, "type")=="msg":
-                    print(data)
-                    relay(received_msg.encode())
+                    if check_msg(data):
+                        print(data.split("nonce=")[0])
+                        relay(received_msg.encode())
                 elif msg_filter(received_msg, "type")=="lump":
                     if verify_lump(data):
                         true_lumps.append(data)
@@ -333,7 +334,8 @@ def send():
         elif raw_msg=="address" or raw_msg=="addr":
             print(node_addr)
         else:
-            broadcast(raw_msg,append=True)
+            msg_to_send=mine_msg(raw_msg)
+            broadcast(msg_to_send,append=True)
 
 def loop_mine_thread():
     global true_lumps

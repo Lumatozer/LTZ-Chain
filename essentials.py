@@ -180,6 +180,24 @@ def arrow_msg_gen(title,msg):
     return title + " -> {\n " + msg + "\n}"
 
 
+def mine_msg(msg):
+    nonce=0
+    while sha256(f"{msg} nonce={nonce}".encode()).hexdigest()[0:5]!="00000":
+        nonce+=1
+    return f"{msg} nonce={nonce}"
+
+
+def check_msg(msg):
+    if len(msg)<=128:
+        pass
+    else:
+        return False
+    if sha256(str(msg).encode()).hexdigest()[0:5]=="00000":
+        return True
+    else:
+        return False
+
+
 def mine(trans,pkey,coinbase: str):
     print(arrow_msg_gen("Miner Thread","Mining Started!"))
     trans["coinbase"]=coinbase
