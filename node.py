@@ -323,6 +323,9 @@ def send():
                 print(tx_lump_result)
                 broadcast(tx_lump_result,type="lump")
                 print("Broadcasted")
+        elif raw_msg=="see bal" or raw_msg=="get bal":
+            check_bal_addr=input("Enter Address : ")
+            print(f"Blockchain{' -> {'}\n Address : {check_bal_addr}\n Balance : {balance(check_bal_addr)} LTZ"+"\n}")
         elif raw_msg=="balance" or raw_msg=="bal":
             print(f"Blockchain{' -> {'}\n Address : {node_addr}\n Balance : {balance(node_addr)} LTZ"+"\n}")
         elif raw_msg=="mine loop":
