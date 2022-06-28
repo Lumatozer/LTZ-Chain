@@ -336,16 +336,17 @@ def send():
             msg_to_send=mine_msg(raw_msg)
             broadcast(msg_to_send,append=True)
 
-def loop_mine_thread():
+
+def loop_mine_lumps():
     global true_lumps
     while True:
         if len(true_lumps)!=0:
             if len(true_lumps)>=5:
                 tx=tx_base(true_lumps[0:5])
                 del true_lumps[:5]
-            if len(true_lumps)>=7:
-                tx=tx_base(true_lumps[0:7])
-                del true_lumps[:7]
+            if len(true_lumps)>=10:
+                tx=tx_base(true_lumps[0:10])
+                del true_lumps[:10]
             elif len(true_lumps)<5:
                 tx=tx_base(true_lumps)
                 true_lumps=[]
@@ -360,7 +361,7 @@ def loop_mine_thread():
 
 t2=threading.Thread(target=send)
 t2.start()
-t3=threading.Thread(target=loop_mine_thread).start()
+t3=threading.Thread(target=loop_mine_lumps).start()
 
 
 while True:

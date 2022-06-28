@@ -110,7 +110,7 @@ def utxo_value(key):
 
 
 def verify_lump(check_lump):
-    if len(str(check_lump))<=10240:
+    if len(str(check_lump))<=9216:
         pass
     else:
         print("False len")
