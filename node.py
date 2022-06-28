@@ -290,7 +290,7 @@ def send():
             if get_building_hash()==block["prev"]:
                 print(arrow_msg_gen("Miner Thread",f"Block Mined Successfully!\n Time Taken : {time.time()-start}"))
                 broadcast(double_quote(block),"block")
-                print(f"Block Validity : {verify_block(double_quote(block))}")
+                print(f"Mined Block Validity : {verify_block(double_quote(block))}")
             else:
                 print(arrow_msg_gen("Miner Thread","Block Mined late."))
         elif raw_msg=="address":
