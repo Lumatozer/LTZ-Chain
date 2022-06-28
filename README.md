@@ -40,6 +40,7 @@ World's first fully decentralized light-weight multi-purpose python based blockc
 12. Everything precompiled in .pyc file formats to speed-up CPU-based processing. You can also git clone .py files from the repo and use those instead if you wish to.
 13. **No external dependencies have been used into making this project therefore eliminating the frustration of installing libraries.**
 14. People connected in the network can also send messages on the network which can be seen by everyone on the network replicating the behaviour of a p2p chat application at the same time cause why not?(although this feature will most probably be removed soon in further versions)
+15. Messages are now also mined with a really small target averaging around 2 seconds per message on a dual core cpu. This has been done to prevent message spamming and DDoS Attacks.
 
 ## Installation
 ```bash
@@ -76,9 +77,9 @@ To set coinbase:
 ```bash
 Node >> coinbase
 ```
-To mine an empty block:
+To infinitely mine empty blocks:
 ```bash
-Node >> mine_empty
+Node >> mine loop
 ```
 To check balance:
 ```bash
@@ -91,6 +92,14 @@ Node >> address
 To manually sync (this will make you sync with your first connected peer/node again):
 ```bash
 Node >> sync
+```
+To connect to a default peer:
+```bash
+Node >> default peer
+```
+To see other accounts balances:
+```bash
+Node >> see bal
 ```
 Typing anything else except these commands will send it as a message to all nodes.
 # Others

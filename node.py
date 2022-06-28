@@ -34,7 +34,6 @@ true_lumps=[]
 print(logovar)
 
 
-from ast import arg
 import socket, threading, random,traceback,sys,time
 from essentials import *
 
