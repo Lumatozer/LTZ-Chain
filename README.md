@@ -99,7 +99,11 @@ Node >> default peer
 ```
 To see other accounts balances:
 ```bash
-Node >> see bal
+Node >> see balance
+```
+To disable or enable incoming messages:
+```bash
+Node >> verbose
 ```
 Typing anything else except these commands will send it as a message to all nodes.
 # Others

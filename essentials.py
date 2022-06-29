@@ -110,7 +110,7 @@ def utxo_value(key):
 
 
 def verify_lump(check_lump):
-    if len(str(check_lump))<=9216:
+    if len(str(check_lump))<=10240:
         pass
     else:
         print("False len")
@@ -180,45 +180,49 @@ def arrow_msg_gen(title,msg):
     return title + " -> {\n " + msg + "\n}"
 
 
-def mine_msg(msg):
+def uidgen():
+	import string
+	import random
+	characters = list(string.ascii_letters + string.digits)
+	length = 50
+	random.shuffle(characters)
+	password = []
+	for i in range(length):
+		password.append(random.choice(characters))
+	random.shuffle(password)
+	return "".join(password)
+
+
+def msg_mine(msg):
     nonce=0
-    while sha256(f"{msg} nonce={nonce}".encode()).hexdigest()[0:5]!="00000":
+    uid=uidgen()
+    while sha256(f"{msg} nonce={nonce} uid={uid}".encode()).hexdigest()[0:5]!="00000":
         nonce+=1
-    return f"{msg} nonce={nonce}"
-
-
-def check_msg(msg):
-    if len(msg)<=128:
-        pass
-    else:
-        return False
-    if sha256(str(msg).encode()).hexdigest()[0:5]=="00000":
-        return True
-    else:
-        return False
+    return f"{msg} nonce={nonce} uid={uid}"
 
 
 def mine(trans,pkey,coinbase: str):
     print(arrow_msg_gen("Miner Thread","Mining Started!"))
-    trans["coinbase"]=coinbase
-    trans["miner"]=pkey
-    hashed_trans=sha256(double_quote(trans).encode()).hexdigest()
-    trans["nonce"]=0
-    new_base={"hash":hashed_trans,"nonce":0}
     if trans["txlump"]!=[] or trans["txlump"]!="":
         if check_all_lumps(trans):
-            while sha256(double_quote(new_base).encode()).hexdigest()[0:6]!="000000":
-                new_base["nonce"]+=1
-            hash=sha256(double_quote(new_base).encode()).hexdigest()
-            trans["hash"]=hash
-            trans["nonce"]=new_base["nonce"]
+            trans["coinbase"]=coinbase
+            trans["miner"]=pkey
+            base={"checksum":sha256(double_quote(trans).encode()).hexdigest(),"nonce":0}
+            while sha256(double_quote(base).encode()).hexdigest()[0:6]!="000000":
+                base["nonce"]+=1    
+            trans["hash"]=sha256(double_quote(base).encode()).hexdigest()
+            trans["nonce"]=base["nonce"]
             return trans
+        else:
+            return False
     else:
-        while sha256(double_quote(new_base).encode()).hexdigest()[0:6]!="000000":
-            new_base["nonce"]+=1
-        hash=sha256(double_quote(new_base).encode()).hexdigest()
-        trans["hash"]=hash
-        trans["nonce"]=new_base["nonce"]
+        trans["coinbase"]=coinbase
+        trans["miner"]=pkey
+        base={"checksum":sha256(double_quote(trans).encode()).hexdigest(),"nonce":0}
+        while sha256(double_quote(base).encode()).hexdigest()[0:6]!="000000":
+            base["nonce"]+=1    
+        trans["hash"]=sha256(double_quote(base).encode()).hexdigest()
+        trans["nonce"]=base["nonce"]
         return trans
 
 
@@ -230,19 +234,6 @@ def msg_gen(data,uid,type):
     ddata=data.decode()
     out={"data":double_quote(ddata),"uid":str(uid),"type":type}
     return double_quote(out)
-
-
-def uidgen():
-	import string
-	import random
-	characters = list(string.ascii_letters + string.digits)
-	length = 25
-	random.shuffle(characters)
-	password = []
-	for i in range(length):
-		password.append(random.choice(characters))
-	random.shuffle(password)
-	return "".join(password)
 
 
 def msg_filter(msg,query):
@@ -316,12 +307,11 @@ def tx_base(tx_lump=[],is_genesis=False):
 
 
 def verify_block(block):
-    block=double_quote(block)
     if len(str(block))<=102400:
         pass
     else:
         return False
-    block=json.loads(block)
+    block=json.loads(double_quote(block))
     if len(block["coinbase"])<=128:
         pass
     else:
@@ -330,20 +320,31 @@ def verify_block(block):
         if block["prev"]!=0:
             if os.path.exists(f'chain\\{block["prev"]}'):
                 cc_block=block.copy()
-                mined_hash=cc_block["hash"]
+                block_hash=cc_block["hash"]
                 del cc_block["hash"]
+                nonce=cc_block["nonce"]
                 del cc_block["nonce"]
-                block_hash=sha256(double_quote(cc_block).encode()).hexdigest()
-                if sha256(double_quote({"hash":block_hash,"nonce":block["nonce"]}).encode()).hexdigest()==mined_hash and mined_hash[0:6]=="000000":
+                base={"checksum":sha256(double_quote(cc_block).encode()).hexdigest(),"nonce":nonce}
+                if sha256(double_quote(base).encode()).hexdigest()==block_hash and block_hash[0:6]=="000000":
                     return True
             else:
                 return False
         else:
             cc_block=block.copy()
-            mined_hash=cc_block["hash"]
+            block_hash=cc_block["hash"]
             del cc_block["hash"]
+            nonce=cc_block["nonce"]
             del cc_block["nonce"]
-            block_hash=sha256(double_quote(cc_block).encode()).hexdigest()
-            if sha256(double_quote({"hash":block_hash,"nonce":block["nonce"]}).encode()).hexdigest()==mined_hash and mined_hash[0:6]=="000000":
+            base={"checksum":sha256(double_quote(cc_block).encode()).hexdigest(),"nonce":nonce}
+            if sha256(double_quote(base).encode()).hexdigest()==block_hash and block_hash[0:6]=="000000":
                 return True   
     return False
+
+def msg_check(msg,uids):
+    try:
+        if sha256(msg.encode()).hexdigest()[0:5]=="00000" and msg.split("uid=")[1] not in uids and len(msg.split(" nonce=")[0])<=128:
+            return True
+        else:
+            return False
+    except:
+        return False

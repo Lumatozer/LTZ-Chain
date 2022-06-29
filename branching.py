@@ -2,6 +2,7 @@ def mer(msg):
     base="\n"+"#"*(len(msg)+4)+"\n"
     return "*Error*" + base + "| " + msg + " |"+ base
 def get_longest(opposite=False):
+    print("| Calculating Longest Branch... |")
     import os,json
     path="chain"
     mes=[]
@@ -46,6 +47,7 @@ def get_longest(opposite=False):
         except:
             print(mer("Error no blockchain genesis found! / Empty Chain!"))
             exit()
+        print("| Longest Branch Calculated |")
         return branches[brlens.index(longest_list)]
     if opposite==True:
         for x in branches:
@@ -58,6 +60,7 @@ def get_longest(opposite=False):
         out_branch=[] 
         for x in branches[brlens.index(longest_list)][::-1]: 
             out_branch.append(x[::-1]) 
+        print("| Longest Branch Calculated |")
         return out_branch
 
 def get_building_hash():

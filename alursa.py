@@ -60,12 +60,12 @@ def generate_primes():
 		else:
 			return prime_candidate
 
-def make_kp():
+def make_kp(bits=1024):
     p=generate_primes()
     q=generate_primes()
     n=p*q
     while True:
-        e = random.randrange(2 ** (1024 - 1), 2 ** (1024))
+        e = random.randrange(2 ** (bits - 1), 2 ** (bits))
         if gcd(e, (p - 1) * (q - 1)) == 1:
             break
     d=findModInverse(e, (p - 1) * (q - 1))
