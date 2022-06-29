@@ -144,6 +144,9 @@ def client_handeler(client):
                     relay(received_msg.encode())
                     try:
                         if verify_block(double_quote(data)):
+                            for x in json.loads(double_quote(data))["txlump"]:
+                                if x in true_lumps:
+                                    true_lumps.remove(x)
                             print("True Block")
                             handle_block_io(double_quote(data))
                         else:
@@ -360,16 +363,17 @@ def send():
 def loop_mine_thread():
     global true_lumps
     while True:
-        if len(true_lumps)!=0:
-            if len(true_lumps)>=5:
-                tx=tx_base(true_lumps[0:5])
-                del true_lumps[:5]
-            if len(true_lumps)>=10:
-                tx=tx_base(true_lumps[0:10])
-                del true_lumps[:10]
-            elif len(true_lumps)<5:
-                tx=tx_base(true_lumps)
-                true_lumps=[]
+        cc_truelumps=true_lumps.copy()
+        if len(cc_truelumps)!=0:
+            if len(cc_truelumps)>=5:
+                tx=tx_base(cc_truelumps[0:5])
+                del cc_truelumps[:5]
+            if len(cc_truelumps)>=10:
+                tx=tx_base(cc_truelumps[0:10])
+                del cc_truelumps[:10]
+            elif len(cc_truelumps)<5:
+                tx=tx_base(cc_truelumps)
+                cc_truelumps=[]
             block=mine(tx,node_addr,coinbase)
             if get_building_hash()==block["prev"]:
                 print(arrow_msg_gen("Miner Thread","Block Mined Successfully!"))
