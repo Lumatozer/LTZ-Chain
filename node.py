@@ -338,7 +338,6 @@ def send():
             elif verify_lump(tx_lump_result)==False:
                 print("Lump verification Failed")
             else:
-                print(tx_lump_result)
                 broadcast(tx_lump_result,type="lump")
                 print("Broadcasted")
         
