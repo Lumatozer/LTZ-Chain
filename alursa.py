@@ -86,17 +86,17 @@ def verify(signature,hash,e,n):
 
 def load():
     try:
-        f=open("den.alukeys")
-        a=f.read()
-        d=int(a.split(",")[0])
-        e=int(a.split(",")[1])
-        n=int(a.split(",")[2])
-        return d,e,n,sha256(str(n).encode()).hexdigest()
+        with open("den.alukeys") as f:
+            a=f.read()
+            d=int(a.split(",")[0])
+            e=int(a.split(",")[1])
+            n=int(a.split(",")[2])
+            return d,e,n,sha256(str(n).encode()).hexdigest()
     except:
         print("Generating 1024-bit KeyPair for you.\nPlease be patient...")
         newkeyd,newkeye,newkeyn,addr=make_kp()
         print("KeyPair Generated!")
-        b=open("den.alukeys",'a')
-        out=str(str(newkeyd)+","+str(newkeye)+","+str(newkeyn))
-        b.write(out)
+        with open("den.alukeys",'a') as uwu:
+            out=str(str(newkeyd)+","+str(newkeye)+","+str(newkeyn))
+            uwu.write(out)
         return newkeyd,newkeye,newkeyn,addr

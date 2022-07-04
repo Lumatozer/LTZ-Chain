@@ -1,8 +1,8 @@
 def get(dbname,query):
     try:
         path=dbname+"\\"+query
-        file=open(path)
-        return file.read()
+        with open(path) as file:
+            return file.read()
     except:
         return False
 
