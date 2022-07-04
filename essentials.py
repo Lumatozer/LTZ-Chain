@@ -217,7 +217,7 @@ def mine(trans,pkey,coinbase: str):
             trans["coinbase"]=coinbase
             trans["miner"]=pkey
             base={"checksum":sha256(double_quote(trans).encode()).hexdigest(),"nonce":0}
-            while sha256(double_quote(base).encode()).hexdigest()[0:6]!="000000":
+            while sha256(double_quote(base).encode()).hexdigest()[0:5]!="00000":
                 base["nonce"]+=1    
             trans["hash"]=sha256(double_quote(base).encode()).hexdigest()
             trans["nonce"]=base["nonce"]
@@ -228,7 +228,7 @@ def mine(trans,pkey,coinbase: str):
         trans["coinbase"]=coinbase
         trans["miner"]=pkey
         base={"checksum":sha256(double_quote(trans).encode()).hexdigest(),"nonce":0}
-        while sha256(double_quote(base).encode()).hexdigest()[0:6]!="000000":
+        while sha256(double_quote(base).encode()).hexdigest()[0:5]!="00000":
             base["nonce"]+=1    
         trans["hash"]=sha256(double_quote(base).encode()).hexdigest()
         trans["nonce"]=base["nonce"]
@@ -334,7 +334,7 @@ def verify_block(block):
                 nonce=cc_block["nonce"]
                 del cc_block["nonce"]
                 base={"checksum":sha256(double_quote(cc_block).encode()).hexdigest(),"nonce":nonce}
-                if sha256(double_quote(base).encode()).hexdigest()==block_hash and block_hash[0:6]=="000000":
+                if sha256(double_quote(base).encode()).hexdigest()==block_hash and block_hash[0:5]=="00000":
                     return True
             else:
                 return False
@@ -345,7 +345,7 @@ def verify_block(block):
             nonce=cc_block["nonce"]
             del cc_block["nonce"]
             base={"checksum":sha256(double_quote(cc_block).encode()).hexdigest(),"nonce":nonce}
-            if sha256(double_quote(base).encode()).hexdigest()==block_hash and block_hash[0:6]=="000000":
+            if sha256(double_quote(base).encode()).hexdigest()==block_hash and block_hash[0:5]=="00000":
                 return True   
     return False
 
