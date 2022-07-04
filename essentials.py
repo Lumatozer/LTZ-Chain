@@ -3,6 +3,11 @@ import traceback
 from aludbms import query
 import json,alursa,os
 from branching import *
+from query2 import query2
+
+def dict_keyval(dict):
+    key_1=str(dict.keys()).replace("'","").replace('"',"")[11:-2]
+    return key_1,dict[key_1]
 
 def make_error(msg):
     base="\n"+"#"*(len(msg)+4)+"\n"
@@ -31,8 +36,10 @@ def tohex(msg):
 
 
 def utxo_person(key):
-    path="utxo"+"\\"+key
-    return (open(path).read().split(":")[0].replace('"',"").replace("{",""))
+    utxs=query2.givedb("inputs")
+    for x in utxs:
+        if dict_keyval(x)[0]==key:
+            return dict_keyval(dict_keyval(x)[1])[0]
 
 
 def in_any(main_list: list,item):
@@ -54,29 +61,28 @@ def balance(addr):
     longest_branch=get_longest()
     test_longest_branch=array_all_in_one(longest_branch)
     paesa=0
-    import os,json
-    path="utxo"
-    all_files=os.listdir(path)
-    for file in all_files:
-        block_id=json.loads(open(f"utxo\\{file}").read())["block"]
-        with open(str(f'{path}\\{file}')) as of:
-            fileread=of.read()
-            inputrec=json.loads(fileread)
-            if utxo_person(file)==addr and block_id in test_longest_branch:
-                paesa+=inputrec[addr]
+    inputs=query2.givedb("inputs")
+    for x in inputs:
+        base=dict_keyval(dict_keyval(x)[1])
+        if base[0]==addr:
+            paesa+=int(base[1])
     return paesa
 
 
 def utxos(addr):
     ips=[]
+    longest_branch=get_longest()
+    test_longest_branch=array_all_in_one(longest_branch)
     import os,json
     path="utxo"
-    for file in os.listdir(path):
-        with open(str(f'{path}\\{file}')) as of:
-            fileread=of.read()
-            if utxo_person(file)==addr:
-                ips.append(sha256(fileread.encode()).hexdigest())
-            of.close()
+    inputs=query2.givedb("inputs")
+    for x in inputs:
+        file=dict_keyval(x)[0]
+        if dict_keyval(dict_keyval(x)[1])[0]==addr:
+            with open(str(f'{path}\\{file}')) as of:
+                block_id=json.loads(double_quote(of.read()))["block"]
+                if block_id in test_longest_branch:
+                    ips.append(file)
     return ips
 
 
@@ -105,8 +111,7 @@ class lump:
 
 
 def utxo_value(key):
-    key="utxo"+"\\"+key
-    return int(open(key).read().split(":")[1].split(",")[0].replace(" ",""))
+    return int(query2.get("inputs",key))
 
 
 def verify_lump(check_lump):
@@ -151,15 +156,19 @@ def handle_lump_io(check_lump,block):
     check_lump=json.loads(double_quote(check_lump))
     for x in check_lump["inputs"]:
         query.remove("utxo",x)
+        query2.remove("inputs",x)
     for x in check_lump["txs"]:
+        query2.append("inputs",sha256(double_quote(str({x["to"]:x["amount"],"block":block["hash"],"lump":check_lump["hash"]})).encode()).hexdigest(),{x["to"]:x["amount"]})
         query.add("utxo",sha256(double_quote(str({x["to"]:x["amount"],"block":block["hash"],"lump":check_lump["hash"]})).encode()).hexdigest(),double_quote(str({x["to"]:x["amount"],"block":block["hash"],"lump":check_lump["hash"]})))
 
 
 def handle_block_io(block):
-    block=json.loads(block)
+    block=json.loads(double_quote(block))
     query.add("chain",block["hash"],double_quote(block))
+    query2.append("chain",block["hash"],block["prev"])
     utxo={block["miner"]:50,"block":block["hash"]}
     query.add("utxo",sha256(double_quote(utxo).encode()).hexdigest(),double_quote(utxo))
+    query2.append("inputs",sha256(double_quote(utxo).encode()).hexdigest(),{block["miner"]:50})
     for x in block["txlump"]:
         handle_lump_io(x,block)
 
@@ -307,7 +316,7 @@ def tx_base(tx_lump=[],is_genesis=False):
 
 
 def verify_block(block):
-    if len(str(block))<=102400:
+    if len(str(block))<=1024000:
         pass
     else:
         return False

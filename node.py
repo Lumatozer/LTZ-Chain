@@ -27,6 +27,7 @@ coinbase="Block Mined"
 verbose=True
 print(logovar)
 import socket, threading, random,traceback,sys
+from time import time
 try:
     port=int(sys.argv[1])
 except:
@@ -242,11 +243,6 @@ def base_mineempty():
         print(arrow_msg_gen("Miner Thread","Block Mined late."))
 
 
-def threaded_looped_mining():
-    while True:
-        base_mineempty()
-
-
 def send():
     global verbose
     global allc
@@ -288,7 +284,7 @@ def send():
             try:
                 sc.connect(("department-bucks.at.playit.gg",60622))
             except:
-                print(f"ERROR : Unable to connect to given ip::port combination.")
+                print(f"ERROR : Unable to connect to default peer.")
                 continue
             allc[sc]=sc
             t1=threading.Thread(target=client_handeler,args=(sc,))
@@ -344,14 +340,14 @@ def send():
                 print("Broadcasted")
         
         elif raw_msg=="balance" or raw_msg=="bal":
-            print(f"Blockchain{' -> {'}\n Address : {node_addr}\n Balance : {balance(node_addr)} LTZ"+"\n}")
+            print(f"Blockchain ->  Address : {node_addr}\n Balance : {balance(node_addr)} LTZ")
 
         elif raw_msg=="see bal" or raw_msg=="see balance":
             check_addr=input("Enter Address : ")
             print(f"Blockchain{' -> {'}\n Address : {check_addr}\n Balance : {balance(check_addr)} LTZ"+"\n}")
         
-        elif raw_msg=="mine loop":
-            threading.Thread(target=threaded_looped_mining).start()
+        elif raw_msg=="mine empty":
+            threading.Thread(target=base_mineempty).start()
         
         elif raw_msg=="address" or raw_msg=="addr":
             print(node_addr)
@@ -363,16 +359,15 @@ def send():
 
 def loop_mine_thread():
     global true_lumps
+    import time
     while True:
+        time.sleep(5)
         cc_truelumps=true_lumps.copy()
         if len(cc_truelumps)!=0:
-            if len(cc_truelumps)>=5:
-                tx=tx_base(cc_truelumps[0:5])
-                del cc_truelumps[:5]
-            if len(cc_truelumps)>=10:
-                tx=tx_base(cc_truelumps[0:10])
-                del cc_truelumps[:10]
-            elif len(cc_truelumps)<5:
+            if len(cc_truelumps)>=100:
+                tx=tx_base(cc_truelumps[0:100])
+                del cc_truelumps[:100]
+            else:
                 tx=tx_base(cc_truelumps)
                 cc_truelumps=[]
             block=mine(tx,node_addr,coinbase)
@@ -389,7 +384,7 @@ t3=threading.Thread(target=loop_mine_thread).start()
 
 while True:
     client,addr=server.accept()
-    print("Got Peer")
+    print("Peer connected!")
     allc[client]=client
     t1=threading.Thread(target=client_handeler,args=(client,))
     t1.start()

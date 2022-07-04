@@ -1,21 +1,21 @@
+from query2 import query2
 def mer(msg):
     base="\n"+"#"*(len(msg)+4)+"\n"
     return "*Error*" + base + "| " + msg + " |"+ base
+def dict_keyval(dict):
+    base=str(dict).replace("'","").replace('"',"").split("{")
+    return base[1].split(": ")[0],base[1].split(": ")[1].split("}")[0]
 def get_longest(opposite=False):
-    print("| Calculating Longest Branch... |")
     import os,json
     path="chain"
     mes=[]
     prevs=[]
     tops=[]
-    all_list_path=os.listdir(path)
-    for file in all_list_path:
-        filepath=path+"\\"+file
-        with open(filepath) as fileio:
-            filedata=fileio.read()
-            jsonfd=json.loads(filedata)
-            mes.append(jsonfd["hash"])
-            prevs.append(jsonfd["prev"])
+    chain=query2.givedb("chain")
+    for x in chain:
+        a,b=dict_keyval(x)
+        mes.append(str(a))
+        prevs.append(str(b))
     for x in mes:
         if x in prevs:
             pass
@@ -31,7 +31,7 @@ def get_longest(opposite=False):
         branch=[]
         branch.append([rnow,prevs[mes.index(rnow)]])
         while True:
-            if prevs[mes.index(rnow)]!=0:
+            if prevs[mes.index(rnow)]!=0 and prevs[mes.index(rnow)]!=str(0):
                 crtlast=findlast(prevs[mes.index(rnow)])
                 branch.append([crtlast,prevs[mes.index(crtlast)]])
                 rnow=crtlast
@@ -47,7 +47,6 @@ def get_longest(opposite=False):
         except:
             print(mer("Error no blockchain genesis found! / Empty Chain!"))
             exit()
-        print("| Longest Branch Calculated |")
         return branches[brlens.index(longest_list)]
     if opposite==True:
         for x in branches:
@@ -60,7 +59,6 @@ def get_longest(opposite=False):
         out_branch=[] 
         for x in branches[brlens.index(longest_list)][::-1]: 
             out_branch.append(x[::-1]) 
-        print("| Longest Branch Calculated |")
         return out_branch
 
 def get_building_hash():
