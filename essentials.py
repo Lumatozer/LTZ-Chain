@@ -115,7 +115,7 @@ def utxo_value(key):
 
 
 def verify_lump(check_lump):
-    if len(str(check_lump))<=9216:
+    if len(str(check_lump))<=2560:
         pass
     else:
         print("False len")
@@ -316,7 +316,7 @@ def tx_base(tx_lump=[],is_genesis=False):
 
 
 def verify_block(block):
-    if len(str(block))<=1024000:
+    if len(str(block))<=1048576:
         pass
     else:
         return False

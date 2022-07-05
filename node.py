@@ -385,9 +385,9 @@ def loop_mine_thread():
         time.sleep(0.5)
         cc_truelumps=true_lumps.copy()
         if len(cc_truelumps)!=0:
-            if len(cc_truelumps)>=100:
-                tx=tx_base(cc_truelumps[0:100])
-                del cc_truelumps[:100]
+            if len(cc_truelumps)>=350:
+                tx=tx_base(cc_truelumps[0:350])
+                del cc_truelumps[:350]
             else:
                 tx=tx_base(cc_truelumps)
                 cc_truelumps=[]
