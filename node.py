@@ -25,8 +25,11 @@ settings=None
 import json
 def load_settings():
     global settings
-    with open("settings.json") as fw:
-        settings=json.loads(fw.read())
+    try:
+        with open("settings.json") as fw:
+            settings=json.loads(fw.read())
+    except:
+        raise Exception("No settings.json file found!")
 load_settings()
 relay_msg=settings["msg"]
 firstpeer=True
