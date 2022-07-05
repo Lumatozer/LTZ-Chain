@@ -109,11 +109,27 @@ To disable or enable error tracebacking (disabled by default):
 ```bash
 Node >> sys verbose
 ```
+To disable or enable sending messages:
+```bash
+Node >> messaging
+```
 To check hashrate:
 ```bash
 Node >> hashrate
 ```
-Typing anything else except these commands will send it as a message to all nodes.
+To save settings:
+```bash
+Node >> save settings
+```
+To see building block:
+```bash
+Node >> top block
+```
+To preview longest chain:
+```bash
+Node >> longest branch
+```
+Typing anything else except these commands will send it as a message to all nodes if messaging is enabled(default).
 # Others
 Keypairs are stored in the same directory as the node.pyc file as "den.alukeys".
 ### To change the keys.

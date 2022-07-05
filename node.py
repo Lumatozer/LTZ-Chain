@@ -21,10 +21,18 @@ logovar="""""""""
                   %%%%%%%%%%                   
                      %%%                       
 """""""""
+settings=None
+import json
+def load_settings():
+    global settings
+    with open("settings.json") as fw:
+        settings=json.loads(fw.read())
+load_settings()
+relay_msg=settings["msg"]
 firstpeer=True
 initial_sync=True
-verbose=True
-sys_verbose=False
+verbose=settings["verbose"]
+sys_verbose=settings["sys verbose"]
 print(logovar)
 import socket, threading, random,traceback,sys,hash_test
 try:
@@ -275,6 +283,7 @@ def send():
     global true_lumps
     global sys_verbose
     global firstpeer
+    global relay_msg
     while True:
         raw_msg=input("Node >> ")
 
@@ -349,6 +358,18 @@ def send():
             elif sys_verbose:
                 print("Sys-Verbose Disabled")
                 sys_verbose=False
+        
+        elif raw_msg=="messaging":
+            if relay_msg==False:
+                print("Messaging Enabled")
+                relay_msg=True
+            elif relay_msg:
+                print("Messaging Disabled")
+                relay_msg=False
+        
+        elif raw_msg=="save settings":
+            with open("settings.json","w+") as fw:
+                fw.write(json.dumps({"verbose":verbose,"sys verbose":sys_verbose,"msg":relay_msg}))
 
         elif raw_msg=="hashrate":
             hash_test.rate_check()
@@ -391,16 +412,30 @@ def send():
         elif raw_msg=="address" or raw_msg=="addr":
             print(node_addr)
         
+        elif raw_msg=="utxos":
+            action=input("Enter address (empty for self): ")
+            if action=="":
+                print(json.dumps(utxos(node_addr),indent=3))
+            else:
+                print(json.dumps(utxos(action),indent=3))
+        
+        elif raw_msg=="top block":
+            print(get_building_hash())
+        
+        elif raw_msg=="longest branch":
+            print(json.dumps(get_longest(),indent=3))
+        
         else:
-            mined_msg=msg_mine(raw_msg)
-            broadcast(mined_msg,append=True)
+            if relay_msg:
+                mined_msg=msg_mine(raw_msg)
+                broadcast(mined_msg,append=True)
 
 
 def loop_mine_thread():
     global true_lumps
     import time
     while True:
-        time.sleep(0.5)
+        time.sleep(0.1)
         cc_truelumps=true_lumps.copy()
         if len(cc_truelumps)!=0:
             if len(cc_truelumps)>=350:
