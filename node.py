@@ -51,6 +51,7 @@ def relay(raw_msg):
     for client in cc_allc:
         try:
             if client not in in_sync:
+                client.send(str(len(raw_msg)).encode())
                 client.send(raw_msg)
         except:
             print("Disconnected")
@@ -88,6 +89,7 @@ def broadcast(raw_msg,type="msg",append=False):
     for client in allc:
         try:
             if client not in in_sync:
+                client.send(str(len(msg.encode())).encode())
                 client.send(msg.encode())
         except:
             print("Disconnected")
@@ -103,8 +105,18 @@ def client_handeler(client):
     global initial_sync
     while True:
         try:
-            
-            received_msg=client.recv(1024000).decode()
+            msg_len=client.recv(1024).decode()
+            if msg_gen=="":
+                print("disconnected")
+                break
+            else:
+                try:
+                    torecv=int(msg_len)
+                    if torecv>1048576:
+                        continue
+                except:
+                    continue
+            received_msg=client.recv(torecv).decode()
             
             if received_msg=="":
                 print("disconnected")
@@ -117,7 +129,8 @@ def client_handeler(client):
             
             except:
                 print("Error : Invalid Message")
-                print(received_msg)
+                if sys_verbose:
+                    print(received_msg)
                 continue
             
             if  msg_filter(received_msg,"uid") not in used:
@@ -164,17 +177,18 @@ def client_handeler(client):
                     longest_branch=get_longest(opposite=True)
                     uid=uidgen()
                     msg=double_quote(msgen("sync",uid,"sending_sync"))
+                    client.send(str(len(msg.encode())).encode())
                     client.send(msg.encode())
                     start_sending=False
                     for x in longest_branch:
                         if start_sending:
                             sleep(0.1)
                             with open(f"chain\\{x[0]}") as uwu:
-                                client.send(uwu.read()).encode()
+                                client.send((uwu.read()).encode())
                         else:
                             if str(x[0])==str(data):
                                 start_sending=True
-                                sleep(0.1)
+                                sleep(0.2)
                                 with open(f"chain\\{x[1]}") as uwu:
                                     client.send((uwu.read()).encode())
                     sleep(0.3)
@@ -186,7 +200,7 @@ def client_handeler(client):
                     bls=0
                     print(arrow_msg_gen("Sync Thread"," Syncing Initialized!"))
                     while True:
-                        uwu=client.recv(1024000).decode()
+                        uwu=client.recv(1048576).decode()
                         if uwu=="":
                             print("Disconnected while Syncing")
                             break
@@ -204,6 +218,7 @@ def client_handeler(client):
                                     lb=get_building_hash()
                                 print(make_warning("Resyncing once more to verify sync!"))
                                 msg=double_quote(msgen(lb,uid,"sync_req"))
+                                client.send(str(len(msg.encode())).encode())
                                 client.send(msg.encode())
                             break
                         elif is_set(uwu)==False:
@@ -287,6 +302,7 @@ def send():
                 else:
                     lb=get_building_hash()
                 msg=double_quote(msgen(lb,uid,"sync_req"))
+                sync_client.send(str(len(msg.encode())).encode())
                 sync_client.send(msg.encode())
         
         elif raw_msg=="default peer":
@@ -309,6 +325,7 @@ def send():
                 else:
                     lb=get_building_hash()
                 msg=double_quote(msgen(lb,uid,"sync_req"))
+                sync_client.send(str(len(msg.encode())).encode())
                 sync_client.send(msg.encode())
         
         elif raw_msg=="sync":
@@ -319,6 +336,7 @@ def send():
             else:
                 lb=get_building_hash()
             msg=double_quote(msgen(lb,uid,"sync_req"))
+            sync_client.send(str(len(msg.encode())).encode())
             sync_client.send(msg.encode())
         
         elif raw_msg=="coinbase":
