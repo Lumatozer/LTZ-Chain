@@ -109,6 +109,10 @@ To disable or enable error tracebacking (disabled by default):
 ```bash
 Node >> sys verbose
 ```
+To check hashrate:
+```bash
+Node >> hashrate
+```
 Typing anything else except these commands will send it as a message to all nodes.
 # Others
 Keypairs are stored in the same directory as the node.pyc file as "den.alukeys".

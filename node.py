@@ -26,7 +26,7 @@ initial_sync=True
 verbose=True
 sys_verbose=False
 print(logovar)
-import socket, threading, random,traceback,sys
+import socket, threading, random,traceback,sys,hash_test
 try:
     port=int(sys.argv[1])
 except:
@@ -262,7 +262,7 @@ def send():
     global firstpeer
     while True:
         raw_msg=input("Node >> ")
-        
+
         if 1==0:
             pass
         
@@ -331,6 +331,9 @@ def send():
             elif sys_verbose:
                 print("Sys-Verbose Disabled")
                 sys_verbose=False
+
+        elif raw_msg=="hashrate":
+            hash_test.rate_check()
 
         elif raw_msg=="verbose":
             if verbose==False:
