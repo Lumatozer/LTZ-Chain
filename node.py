@@ -294,7 +294,7 @@ def send():
             print("~~-Add-New-Peer-~~")
             sc=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
             try:
-                sc.connect((input("I.P. : "),int(input("PORT : "))))
+                sc.connect((input("I.P. : ").replace(" ",""),int(input("PORT : ").replace(" ",""))))
             except:
                 print(f"ERROR : Unable to connect to given ip::port combination.")
                 continue
@@ -383,8 +383,8 @@ def send():
                 verbose=False
         
         elif raw_msg=="tx":
-            send_to=input("Receiver : ")
-            amount=input("Amount (int) : ")
+            send_to=input("Receiver : ").replace(" ","")
+            amount=input("Amount (int) : ").replace(" ","")
             try:
                 int(amount)
             except:
@@ -403,7 +403,7 @@ def send():
             print(f"Blockchain ->  Address : {node_addr}\n Balance : {balance(node_addr)} LTZ")
 
         elif raw_msg=="see bal" or raw_msg=="see balance":
-            check_addr=input("Enter Address : ")
+            check_addr=input("Enter Address : ").replace(" ","")
             print(f"Blockchain{' -> {'}\n Address : {check_addr}\n Balance : {balance(check_addr)} LTZ"+"\n}")
         
         elif raw_msg=="mine empty":
@@ -413,7 +413,7 @@ def send():
             print(node_addr)
         
         elif raw_msg=="utxos":
-            action=input("Enter address (empty for self): ")
+            action=input("Enter address (empty for self): ").replace(" ","")
             if action=="":
                 print(json.dumps(utxos(node_addr),indent=3))
             else:
