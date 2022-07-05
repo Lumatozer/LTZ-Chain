@@ -325,12 +325,12 @@ def send():
             coinbase=input("Set custom coinbase value : ")
         
         elif raw_msg=="sys verbose":
-            if verbose==False:
+            if sys_verbose==False:
                 print("Sys-Verbose Enabled")
-                verbose=True
-            elif verbose:
+                sys_verbose=True
+            elif sys_verbose:
                 print("Sys-Verbose Disabled")
-                verbose=False
+                sys_verbose=False
 
         elif raw_msg=="verbose":
             if verbose==False:
