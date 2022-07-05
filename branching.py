@@ -7,7 +7,6 @@ def dict_keyval(dict):
     return base[1].split(": ")[0],base[1].split(": ")[1].split("}")[0]
 def get_longest(opposite=False):
     import os,json
-    path="chain"
     mes=[]
     prevs=[]
     tops=[]
@@ -16,6 +15,7 @@ def get_longest(opposite=False):
         a,b=dict_keyval(x)
         mes.append(str(a))
         prevs.append(str(b))
+    del chain
     for x in mes:
         if x in prevs:
             pass

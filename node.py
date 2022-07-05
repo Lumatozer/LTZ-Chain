@@ -24,9 +24,9 @@ logovar="""""""""
 firstpeer=True
 initial_sync=True
 verbose=True
+sys_verbose=False
 print(logovar)
 import socket, threading, random,traceback,sys
-from time import time
 try:
     port=int(sys.argv[1])
 except:
@@ -37,7 +37,7 @@ d,e,n,node_addr = alursa.load()
 coinbase="LTZ is the best!"
 server = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
 server.bind(('127.0.0.1',port))
-print(arrow_msg_gen("BlockChain",f" Your host port is {port}"))
+print(f"Your host port is {port}")
 server.listen()
 allc = {}
 used = []
@@ -153,7 +153,8 @@ def client_handeler(client):
                         else:
                             print("False Block")
                     except:
-                        traceback.print_exc()
+                        if sys_verbose:
+                            traceback.print_exc()
                         print("False Block/Already Added")
                 
                 elif msg_filter(received_msg, "type")=="sync_req":
@@ -182,6 +183,7 @@ def client_handeler(client):
                     del in_sync[client]
                 
                 elif msg_filter(received_msg, "type")=="sending_sync":
+                    bls=0
                     print(arrow_msg_gen("Sync Thread"," Syncing Initialized!"))
                     while True:
                         uwu=client.recv(1024000).decode()
@@ -189,7 +191,10 @@ def client_handeler(client):
                             print("Disconnected while Syncing")
                             break
                         elif uwu=="sync_end":
-                            print(arrow_msg_gen("Sync Thread"," Sync complete"))
+                            if bls==0:
+                                print(arrow_msg_gen("Sync Thread"," Sync Up-to-Date"))
+                            else:
+                                print(arrow_msg_gen("Sync Thread"," Syncing complete"))
                             if initial_sync:
                                 initial_sync=False
                                 uid=uidgen()
@@ -197,6 +202,7 @@ def client_handeler(client):
                                     lb=0
                                 else:
                                     lb=get_building_hash()
+                                print(make_warning("Resyncing once more to verify sync!"))
                                 msg=double_quote(msgen(lb,uid,"sync_req"))
                                 client.send(msg.encode())
                             break
@@ -209,20 +215,23 @@ def client_handeler(client):
                                 if verify_block(uwu):
                                     print("Block Received!")
                                     handle_block_io(uwu)
+                                    bls+=1
                                 else:
                                     print(uwu)
                                     print("invalid block received")
                                     print("Syncer node sending inavlid blocks. Stopping Sync")
                                     break
                             except:
-                                traceback.print_exc()
+                                if sys_verbose:
+                                    traceback.print_exc()
                                 print("Error during sync. Stopping sync.")
                 else:
                     print(received_msg)
                     print("Non-Forwardable Message Received!")
         
         except:
-            traceback.print_exc()
+            if sys_verbose:
+                traceback.print_exc()
             print("Disconnected")
             try:
                 del allc[cc]
@@ -249,6 +258,7 @@ def send():
     global used
     global coinbase
     global true_lumps
+    global sys_verbose
     global firstpeer
     while True:
         raw_msg=input("Node >> ")
@@ -313,6 +323,14 @@ def send():
         
         elif raw_msg=="coinbase":
             coinbase=input("Set custom coinbase value : ")
+        
+        elif raw_msg=="sys verbose":
+            if verbose==False:
+                print("Sys-Verbose Enabled")
+                verbose=True
+            elif verbose:
+                print("Sys-Verbose Disabled")
+                verbose=False
 
         elif raw_msg=="verbose":
             if verbose==False:
