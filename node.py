@@ -382,7 +382,7 @@ def loop_mine_thread():
     global true_lumps
     import time
     while True:
-        time.sleep(5)
+        time.sleep(0.5)
         cc_truelumps=true_lumps.copy()
         if len(cc_truelumps)!=0:
             if len(cc_truelumps)>=100:

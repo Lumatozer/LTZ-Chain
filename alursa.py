@@ -51,18 +51,17 @@ def isMillerRabinPassed(mrc):
 		if trialComposite(round_tester):
 			return False
 	return True
-def generate_primes():
+def generate_primes(n):
 	while True:
-		n = 1024
 		prime_candidate = getLowLevelPrime(n)
 		if not isMillerRabinPassed(prime_candidate):
 			continue
 		else:
 			return prime_candidate
 
-def make_kp(bits=1024):
-    p=generate_primes()
-    q=generate_primes()
+def make_kp(bits=256):
+    p=generate_primes(bits)
+    q=generate_primes(bits)
     n=p*q
     while True:
         e = random.randrange(2 ** (bits - 1), 2 ** (bits))
@@ -93,7 +92,7 @@ def load():
             n=int(a.split(",")[2])
             return d,e,n,sha256(str(n).encode()).hexdigest()
     except:
-        print("Generating 1024-bit KeyPair for you.\nPlease be patient...")
+        print("Generating 256-bit KeyPair for you.\nPlease be patient...")
         newkeyd,newkeye,newkeyn,addr=make_kp()
         print("KeyPair Generated!")
         with open("den.alukeys",'a') as uwu:
