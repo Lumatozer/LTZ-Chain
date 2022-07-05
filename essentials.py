@@ -118,7 +118,7 @@ def verify_lump(check_lump):
     if len(str(check_lump))<=2560:
         pass
     else:
-        print("False len")
+        print("Lump length longer than 2.5 kilobytes")
         return False
     longest_branch=get_longest()
     check_lump=json.loads(double_quote(check_lump))
@@ -137,18 +137,14 @@ def verify_lump(check_lump):
             if in_any(longest_branch,block_id):
                 tap+=utxo_value(x)
         for x in jlump['txs']:
-            copy_x=x.copy()
-            del copy_x["sign"]
             if alursa.verify(x["sign"],sha256((n_sender+str(x["to"])+str(x["amount"])).encode()).hexdigest(),e,n) and n_sender==input_sender:
                 spenttap+=x["amount"]
                 crt_txs+=1
         if spenttap==tap and crt_txs==all_txs:
             return True
         else:
-            print("somewhere in txs")
             return False
     else:
-        print("somewhere in hashes")
         return False
 
 
