@@ -53,7 +53,8 @@ def array_all_in_one(t_array: list):
     out_arr=[]
     for x in t_array:
         for y in x:
-            out_arr.append(y)
+            if y not in out_arr:
+                out_arr.append(y)
     return out_arr
 
 
@@ -161,14 +162,17 @@ def handle_block_io(block):
     block=json.loads(double_quote(block))
     query.add("chain",block["hash"],double_quote(block))
     query2.append("chain",block["hash"],block["prev"])
-    utxo={block["miner"]:1.0,"block":block["hash"]}
+    utxo={block["miner"]:50.0,"block":block["hash"]}
     query.add("utxo",sha256(double_quote(utxo).encode()).hexdigest(),double_quote(utxo))
-    query2.append("inputs",sha256(double_quote(utxo).encode()).hexdigest(),{block["miner"]:1.0})
+    query2.append("inputs",sha256(double_quote(utxo).encode()).hexdigest(),{block["miner"]:50.0})
     for x in block["txlump"]:
         handle_lump_io(x,block)
 
 
 def check_all_lumps(trans):
+    trans=json.loads(double_quote(trans))
+    if len(trans["txlump"])==0:
+        return True
     longest_chain=array_all_in_one(get_longest())
     lumps=len(trans["txlump"])
     crt_lumps=0
@@ -303,12 +307,8 @@ def workout_lump(topay,whom,d,e,n):
         return lump([a,b],inputs)
 
 
-def tx_base(tx_lump=[],is_genesis=False):
-    from branching import get_building_hash
-    if is_genesis:
-        return {"txlump":tx_lump,"prev":0}
-    else:
-        return {"txlump":tx_lump,"prev":get_building_hash()}
+def tx_base(tx_lump=[]):
+    return {"txlump":tx_lump,"prev":get_building_hash()}
 
 
 def verify_block(block):
