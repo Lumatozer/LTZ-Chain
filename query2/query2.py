@@ -5,9 +5,10 @@ def dict_keyval(dict):
 def get(dbname,key):
     dbname=dbname+".aludb"
     with open(dbname) as fw:
-        file=json.loads(fw.read())
-    for x in file:
-        if dict_keyval(x)[0].replace('"',"").replace("'","")==key:
+        fr=fw.read()
+        db_file=json.loads(str(fr))
+    for x in db_file:
+        if (((dict_keyval(x)[0]).replace('"',"")).replace("'",""))==key:
             return dict_keyval(dict_keyval(x)[1])[1]
 
 def key_exists(dbname,key):

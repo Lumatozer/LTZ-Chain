@@ -119,7 +119,7 @@ def verify_lump(check_lump,total_longest):
     if len(str(check_lump))<=2560:
         pass
     else:
-        print("Lump length longer than 2.5 kilobytes")
+        print("Lump length longer than 2.5 kilobytes (try sending money in smaller parts).")
         return False
     check_lump=json.loads(double_quote(check_lump))
     if check_lump["hash"]==sha256(str({"txs":check_lump["txs"],"inputs":check_lump["inputs"]}).encode()).hexdigest():
