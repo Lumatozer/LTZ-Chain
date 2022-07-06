@@ -67,7 +67,7 @@ def balance(addr):
         base=dict_keyval(dict_keyval(x)[1])
         if base[0]==addr:
             paesa+=float(base[1])
-    return paesa
+    return round(float(paesa),8)
 
 
 def utxos(addr):
@@ -159,12 +159,13 @@ def handle_lump_io(check_lump,block):
 
 
 def handle_block_io(block):
+    reward=0.03
     block=json.loads(double_quote(block))
     query.add("chain",block["hash"],double_quote(block))
     query2.append("chain",block["hash"],block["prev"])
-    utxo={block["miner"]:50.0,"block":block["hash"]}
+    utxo={block["miner"]:reward,"block":block["hash"]}
     query.add("utxo",sha256(double_quote(utxo).encode()).hexdigest(),double_quote(utxo))
-    query2.append("inputs",sha256(double_quote(utxo).encode()).hexdigest(),{block["miner"]:50.0})
+    query2.append("inputs",sha256(double_quote(utxo).encode()).hexdigest(),{block["miner"]:reward})
     for x in block["txlump"]:
         handle_lump_io(x,block)
 
@@ -193,7 +194,7 @@ def uidgen():
 	import string
 	import random
 	characters = list(string.ascii_letters + string.digits)
-	length = 50
+	length = 20
 	random.shuffle(characters)
 	password = []
 	for i in range(length):
@@ -308,7 +309,7 @@ def workout_lump(topay,whom,d,e,n):
 
 
 def tx_base(tx_lump=[]):
-    return {"txlump":tx_lump,"prev":get_building_hash()}
+    return {"txlump":tx_lump,"prev":get_building_hash(),"contracts":[],"others":[]}
 
 
 def verify_block(block):

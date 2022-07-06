@@ -277,6 +277,12 @@ def base_mineempty():
     else:
         print(arrow_msg_gen("Miner Thread","Block Mined late."))
 
+def loop_mine():
+    while True:
+        base_mineempty()
+
+def thread_loop_mine():
+    threading.Thread(target=loop_mine).start()
 
 def send():
     global verbose
@@ -411,6 +417,9 @@ def send():
         
         elif raw_msg=="mine empty":
             threading.Thread(target=base_mineempty).start()
+        
+        elif raw_msg=="mine loop":
+            thread_loop_mine()
         
         elif raw_msg=="address" or raw_msg=="addr":
             print(node_addr)
