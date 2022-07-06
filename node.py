@@ -172,7 +172,8 @@ def client_handeler(client):
                             for x in json.loads(double_quote(data))["txlump"]:
                                 if x in true_lumps:
                                     true_lumps.remove(x)
-                            print("True Block")
+                            block_json=json.loads(double_quote(data))
+                            print(f"Block:[ hash: {block_json['hash']} miner: {block_json['miner']} coinbase: {block_json['coinbase']}")
                             handle_block_io(double_quote(data))
                         else:
                             print("False Block")
@@ -272,7 +273,6 @@ def base_mineempty():
     block=mine(tx,node_addr,coinbase)
     if get_building_hash()==block["prev"]:
         print(arrow_msg_gen("Miner Thread","Block Mined Successfully!"))
-        print(verify_block(double_quote(block)))
         broadcast(double_quote(block),"block")
     else:
         print(arrow_msg_gen("Miner Thread","Block Mined late."))

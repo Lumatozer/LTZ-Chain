@@ -318,7 +318,7 @@ def verify_block(block):
     else:
         return False
     block=json.loads(double_quote(block))
-    if len(block["coinbase"])<=128:
+    if len(block["coinbase"])<=128 and len(block["miner"])<=64:
         pass
     else:
         return False
