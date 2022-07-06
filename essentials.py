@@ -237,7 +237,7 @@ def mine(trans,pkey,coinbase: str):
 
 
 def address(n):
-    return sha256(str(n).encode()).hexdigest()
+    return sha256(sha256(str(n).encode()).hexdigest().encode()).hexdigest()
 
 
 def msg_gen(data,uid,type):
