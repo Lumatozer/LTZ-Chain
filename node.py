@@ -387,13 +387,13 @@ def send():
         
         elif raw_msg=="tx":
             send_to=input("Receiver : ").replace(" ","")
-            amount=input("Amount (int) : ").replace(" ","")
+            amount=input("Amount (number) : ").replace(" ","")
             try:
-                int(amount)
+                float(amount)
             except:
                 print("Invalid Amount")
                 continue
-            tx_lump_result=workout_lump(int(amount),send_to,d,e,n)
+            tx_lump_result=workout_lump(float(amount),send_to,d,e,n)
             if tx_lump_result==False:
                 print("Invalid Lump!")
             elif verify_lump(tx_lump_result)==False:

@@ -65,7 +65,7 @@ def balance(addr):
     for x in inputs:
         base=dict_keyval(dict_keyval(x)[1])
         if base[0]==addr:
-            paesa+=int(base[1])
+            paesa+=float(base[1])
     return paesa
 
 
@@ -111,7 +111,7 @@ class lump:
 
 
 def utxo_value(key):
-    return int(query2.get("inputs",key))
+    return float(query2.get("inputs",key))
 
 
 def verify_lump(check_lump):
@@ -138,7 +138,7 @@ def verify_lump(check_lump):
                 tap+=utxo_value(x)
         for x in jlump['txs']:
             if alursa.verify(x["sign"],sha256((n_sender+str(x["to"])+str(x["amount"])).encode()).hexdigest(),e,n) and n_sender==input_sender:
-                spenttap+=x["amount"]
+                spenttap+=round(float(x["amount"]),8)
                 crt_txs+=1
         if spenttap==tap and crt_txs==all_txs:
             return True
@@ -162,9 +162,9 @@ def handle_block_io(block):
     block=json.loads(double_quote(block))
     query.add("chain",block["hash"],double_quote(block))
     query2.append("chain",block["hash"],block["prev"])
-    utxo={block["miner"]:50,"block":block["hash"]}
+    utxo={block["miner"]:1.0,"block":block["hash"]}
     query.add("utxo",sha256(double_quote(utxo).encode()).hexdigest(),double_quote(utxo))
-    query2.append("inputs",sha256(double_quote(utxo).encode()).hexdigest(),{block["miner"]:50})
+    query2.append("inputs",sha256(double_quote(utxo).encode()).hexdigest(),{block["miner"]:1.0})
     for x in block["txlump"]:
         handle_lump_io(x,block)
 
