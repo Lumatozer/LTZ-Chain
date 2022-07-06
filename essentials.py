@@ -114,13 +114,12 @@ def utxo_value(key):
     return float(query2.get("inputs",key))
 
 
-def verify_lump(check_lump):
+def verify_lump(check_lump,total_longest):
     if len(str(check_lump))<=2560:
         pass
     else:
         print("Lump length longer than 2.5 kilobytes")
         return False
-    longest_branch=get_longest()
     check_lump=json.loads(double_quote(check_lump))
     if check_lump["hash"]==sha256(str({"txs":check_lump["txs"],"inputs":check_lump["inputs"]}).encode()).hexdigest():
         jlump=json.loads(double_quote(check_lump))
@@ -134,7 +133,7 @@ def verify_lump(check_lump):
         spenttap=0
         for x in jlump["inputs"]:
             block_id=json.loads(open(f"utxo\\{x}").read())["block"]
-            if in_any(longest_branch,block_id):
+            if block_id in total_longest:
                 tap+=utxo_value(x)
         for x in jlump['txs']:
             if alursa.verify(x["sign"],sha256((n_sender+str(x["to"])+str(x["amount"])).encode()).hexdigest(),e,n) and n_sender==input_sender:
@@ -170,10 +169,11 @@ def handle_block_io(block):
 
 
 def check_all_lumps(trans):
+    longest_chain=array_all_in_one(get_longest())
     lumps=len(trans["txlump"])
     crt_lumps=0
     for x in trans["txlump"]:
-        if verify_lump(x):
+        if verify_lump(x,longest_chain):
             crt_lumps+=1
     if crt_lumps==lumps:
         return True

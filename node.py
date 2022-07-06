@@ -159,7 +159,7 @@ def client_handeler(client):
                         
                 
                 elif msg_filter(received_msg, "type")=="lump":
-                    if verify_lump(data):
+                    if verify_lump(data,array_all_in_one(get_longest())):
                         true_lumps.append(data)
                         relay(received_msg.encode())    
                     else:
@@ -393,10 +393,10 @@ def send():
             except:
                 print("Invalid Amount")
                 continue
-            tx_lump_result=workout_lump(float(amount),send_to,d,e,n)
+            tx_lump_result=workout_lump(round(float(amount),8),send_to,d,e,n)
             if tx_lump_result==False:
                 print("Invalid Lump!")
-            elif verify_lump(tx_lump_result)==False:
+            elif verify_lump(tx_lump_result,array_all_in_one(get_longest()))==False:
                 print("Lump verification Failed")
             else:
                 broadcast(tx_lump_result,type="lump")
