@@ -12,6 +12,9 @@ ALPHABET_REVERSE = dict((c, i) for (i, c) in enumerate(ALPHABET))
 BASE = len(ALPHABET)
 SIGN_CHARACTER = '$'
 
+def ltz_round(num):
+    return round(float(num),8)
+
 def num_encode(n):
     if n < 0:
         return SIGN_CHARACTER + num_encode(-n)
@@ -92,7 +95,7 @@ def balance(addr):
         base=dict_keyval(dict_keyval(x)[1])
         if base[0]==addr:
             paesa+=float(base[1])
-    return round(float(paesa),8)
+    return ltz_round(paesa)
 
 
 def utxos(addr):
@@ -120,7 +123,7 @@ class tx:
     def __init__(self,to,amount,d,e,n) -> None:
         self.to=to
         self.amount=amount
-        self.sign=alursa.signature(sha256((str(address(n))+str(self.to)+str(self.amount)).encode()).hexdigest(),d,n)
+        self.sign=num_encode(int(alursa.signature(sha256((str(address(n))+str(self.to)+str(self.amount)).encode()).hexdigest(),d,n)))
         self.n=num_encode(n)
         self.e=num_encode(e)
     def __repr__(self):
@@ -137,7 +140,7 @@ class lump:
 
 
 def utxo_value(key):
-    return round(float(query2.get("inputs",key)),8)
+    return ltz_round(query2.get("inputs",key))
 
 
 def verify_lump(check_lump,total_longest,verbose=False):
@@ -156,17 +159,17 @@ def verify_lump(check_lump,total_longest,verbose=False):
         n_sender=address(n)
         all_txs=len(jlump["txs"])
         crt_txs=0
-        tap=0.0
+        tap=0
         spenttap=0.0
         for x in jlump["inputs"]:
             block_id=json.loads(open(f"utxo\\{x}").read())["block"]
             if block_id in total_longest:
-                tap+=round(float(utxo_value(x)),8)
+                tap+=ltz_round(utxo_value(x))
         for x in jlump['txs']:
-            if alursa.verify(x["sign"],sha256((n_sender+str(x["to"])+str(x["amount"])).encode()).hexdigest(),e,n) and n_sender==input_sender:
-                spenttap+=round(float(x["amount"]),8)
+            if alursa.verify(int(num_decode(x["sign"])),sha256((n_sender+str(x["to"])+str(x["amount"])).encode()).hexdigest(),e,n) and n_sender==input_sender and round(float(x["amount"]),8)>0.0:
+                spenttap+=ltz_round(x["amount"])
                 crt_txs+=1
-        if spenttap==tap and crt_txs==all_txs:
+        if ltz_round(spenttap)==ltz_round(tap) and crt_txs==all_txs:
             return True
         else:
             if verbose:
@@ -290,7 +293,7 @@ def msg_filter(msg,query):
 
 def generate_inputs(n,topay):
     addr=address(n)
-    if balance(addr)>=round(float(topay),8):
+    if balance(addr)>=ltz_round(topay):
         allowed_inputs=utxos(addr)
         input_balances=[]
         for x in allowed_inputs:
@@ -300,14 +303,14 @@ def generate_inputs(n,topay):
         input_balances.sort()
         inputs_to_use=[]
         for x in input_balances:
-            if x>=round(float(topay),8):
+            if x>=ltz_round(topay):
                 inputs_to_use.append(allowed_inputs[cc_ib.index(x)])
                 break
         if inputs_to_use==[]:
             in_val=0
             using_now=[]
             for x in input_balances:
-                if in_val>=round(float(topay),8):
+                if in_val>=ltz_round(topay):
                     print(using_now)
                     break
                 else:
@@ -324,17 +327,17 @@ def workout_lump(topay,whom,d,e,n):
     addr=address(n)
     if utxos(addr)==[]:
         return False
-    inputs=generate_inputs(n,round(float(topay),8))
+    inputs=generate_inputs(n,ltz_round(topay))
     if inputs==False:
         return False
     tap=0
     for x in inputs:
-        tap+=round(float(utxo_value(x)),8)
-    if round(float(tap),8)-round(float(topay),8)==0:
-        return lump([tx(whom,round(float(topay),8),d,e,n)],inputs)
+        tap+=ltz_round(utxo_value(x))
+    if ltz_round(tap)-ltz_round(topay)==0:
+        return lump([tx(whom,ltz_round(topay),d,e,n)],inputs)
     else:
-        a=tx(whom,round(float(topay),8),d,e,n)
-        b=tx(addr,(round(float(tap),8)-round(float(topay),8)),d,e,n)
+        a=tx(whom,ltz_round(topay),d,e,n)
+        b=tx(addr,(ltz_round(tap)-ltz_round(topay)),d,e,n)
         return lump([a,b],inputs)
 
 
