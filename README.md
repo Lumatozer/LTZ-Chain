@@ -41,7 +41,7 @@ World's first fully decentralized light-weight multi-purpose python based blockc
 13. **No external dependencies have been used into making this project therefore eliminating the frustration of installing libraries.**
 14. People connected in the network can also send messages on the network which can be seen by everyone on the network replicating the behaviour of a p2p chat application at the same time cause why not? (although this feature will most probably be removed soon in further versions).
 15. Messages are now also mined with a really small target averaging around 2 seconds per message on a dual core cpu. This has been done to prevent message spamming and DDoS Attacks.
-16. Added float LTZ exchanging for sending money in small bits till 4 decimals.
+16. Added float LTZ exchanging for sending money in small bits till 8 decimals.
 17. Added 512 characters plain-text contracts for permanent storage on the blockchain.
 18. Gas fees calculated on the basis of how long of a contract has been written.(1% TX fees at max limit of 512 characters)
 

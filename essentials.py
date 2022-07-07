@@ -13,7 +13,7 @@ BASE = len(ALPHABET)
 SIGN_CHARACTER = '$'
 
 def ltz_round(num):
-    return round(float(num),4)
+    return round(float(num),8)
 
 def num_encode(n):
     if n < 0:
