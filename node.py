@@ -55,6 +55,7 @@ used = []
 msg_used=[]
 in_sync={}
 true_lumps=[]
+true_contracts=[]
 
 def not_common_lists(list1, list2):
     for x in list1:
@@ -429,6 +430,24 @@ def send():
                     broadcast(tx_lump_result,type="lump")
                     print("Broadcasted")
             
+            elif raw_msg=="contract tx":
+                send_to=input("Receiver : ").replace(" ","")
+                amount=input("Amount (number) : ").replace(" ","")
+                contract=input("Contract (len < 512 characters) : ")
+                try:
+                    float(amount)
+                except:
+                    print("Invalid Amount")
+                    continue
+                tx_lump_result=workout_lump(round(float(amount),8),send_to,d,e,n,contract)
+                if tx_lump_result==False:
+                    print("Invalid Lump Details!")
+                elif verify_lump(tx_lump_result,array_all_in_one(get_longest()),verbose=True)==False:
+                    print("Lump verification Failed")
+                else:
+                    broadcast(tx_lump_result,type="lump")
+                    print("Broadcasted")
+            
             elif raw_msg=="balance" or raw_msg=="bal":
                 print(f"Blockchain ->  Address : {node_addr}\n Balance : {balance(node_addr)} LTZ")
 
@@ -473,9 +492,9 @@ def loop_mine_thread():
         time.sleep(0.1)
         cc_truelumps=true_lumps.copy()
         if len(cc_truelumps)!=0:
-            if len(cc_truelumps)>=350:
-                tx=tx_base(cc_truelumps[0:350])
-                del cc_truelumps[:350]
+            if len(cc_truelumps)>=300:
+                tx=tx_base(cc_truelumps[0:300])
+                del cc_truelumps[:300]
             else:
                 tx=tx_base(cc_truelumps)
                 cc_truelumps=[]

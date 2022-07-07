@@ -36,11 +36,14 @@ World's first fully decentralized light-weight multi-purpose python based blockc
 8. Multiple lumps per block supported with a **max block size limit of 1 megabyte**.(usually 100 lumps ber block at max but any number allowed as long as it does not go above the block limit)
 9. Extra coinbase field in which block-miner can store text or link pointing at NFTS making sure they remain permanent and untampered on the blockchain.
 10. All types of issues like bazantine's generals problem or longest chain rule etc. have been implemented to make sure that there is no way to exploit the chain or tamper any data.
-11. **CPU based PoW mining** (subject to changes) and reward of 1 LTZ per block mined.(mining empty blocks are also permitted on the network for a short time)
+11. **CPU based PoW mining** (subject to changes) and reward of 0.1 LTZ per block mined.(mining empty blocks are also permitted on the network for a short time)
 12. Everything precompiled in .pyc file formats to speed-up CPU-based processing. You can also git clone .py files from the repo and use those instead if you wish to.
 13. **No external dependencies have been used into making this project therefore eliminating the frustration of installing libraries.**
 14. People connected in the network can also send messages on the network which can be seen by everyone on the network replicating the behaviour of a p2p chat application at the same time cause why not? (although this feature will most probably be removed soon in further versions).
 15. Messages are now also mined with a really small target averaging around 2 seconds per message on a dual core cpu. This has been done to prevent message spamming and DDoS Attacks.
+16. Added float LTZ exchanging for sending money in small bits till 8 decimals.
+17. Added 512 characters plain-text contracts for permanent storage on the blockchain.
+18. Gas fees calculated on the basis of how long of a contract has been written.(1% TX fees at max limit of 512 characters)
 
 Read more at https://aaravdayal.com/
 
@@ -130,6 +133,10 @@ Node >> top block
 To preview longest chain:
 ```bash
 Node >> longest branch
+```
+To issue TX with a contract:
+```bash
+Node >> contract tx
 ```
 Typing anything else except these commands will send it as a message to all nodes if messaging is enabled(default).
 # Others

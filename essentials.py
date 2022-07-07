@@ -131,12 +131,13 @@ class tx:
 
 
 class lump:
-    def __init__(self,txs: list,inputs: list) -> None:
+    def __init__(self,txs: list,inputs: list,msg="") -> None:
         self.txs=txs
         self.inputs=inputs
-        self.hash=sha256(str({"txs":self.txs,"inputs":self.inputs}).encode()).hexdigest()
+        self.msg=msg
+        self.hash=sha256(str({"txs":self.txs,"inputs":self.inputs,"msg":self.msg}).encode()).hexdigest()
     def __repr__(self):
-        return str({"txs":self.txs,"inputs":self.inputs,"hash":self.hash})
+        return str({"txs":self.txs,"inputs":self.inputs,"msg":self.msg,"hash":self.hash})
 
 
 def utxo_value(key):
@@ -144,14 +145,14 @@ def utxo_value(key):
 
 
 def verify_lump(check_lump,total_longest,verbose=False):
-    if len(str(check_lump))<=2560:
+    if len(str(check_lump))<=3072 and len(str(json.loads(double_quote(check_lump))["msg"]))<=512:
         pass
     else:
         if verbose:
             print("Lump length longer than 2.5 kilobytes (try sending money in smaller parts).")
         return False
     check_lump=json.loads(double_quote(check_lump))
-    if check_lump["hash"]==sha256(str({"txs":check_lump["txs"],"inputs":check_lump["inputs"]}).encode()).hexdigest():
+    if check_lump["hash"]==sha256(str({"txs":check_lump["txs"],"inputs":check_lump["inputs"],"msg":check_lump["msg"]}).encode()).hexdigest():
         jlump=json.loads(double_quote(check_lump))
         input_sender=utxo_person(jlump["inputs"][0])
         e=int(num_decode(jlump["txs"][0]["e"]))
@@ -181,14 +182,24 @@ def verify_lump(check_lump,total_longest,verbose=False):
         return False
 
 
+def calculate_gas(check_lump):
+    check_lump=json.loads(double_quote(check_lump))
+    msg=str(check_lump["msg"])
+    if len(msg)==0:
+        return 0.0
+    return ltz_round(len(msg)/512)
+
+
 def handle_lump_io(check_lump,block):
     check_lump=json.loads(double_quote(check_lump))
+    gas=calculate_gas(check_lump)
     for x in check_lump["inputs"]:
         query.remove("utxo",x)
         query2.remove("inputs",x)
     for x in check_lump["txs"]:
-        query2.append("inputs",sha256(double_quote(str({x["to"]:x["amount"],"block":block["hash"],"lump":check_lump["hash"]})).encode()).hexdigest(),{x["to"]:x["amount"]})
-        query.add("utxo",sha256(double_quote(str({x["to"]:x["amount"],"block":block["hash"],"lump":check_lump["hash"]})).encode()).hexdigest(),double_quote(str({x["to"]:x["amount"],"block":block["hash"],"lump":check_lump["hash"]})))
+        gassed_amount=ltz_round(ltz_round((100-gas)/100)*ltz_round(x["amount"]))
+        query2.append("inputs",sha256(double_quote(str({x["to"]:gassed_amount,"block":block["hash"],"lump":check_lump["hash"]})).encode()).hexdigest(),{x["to"]:gassed_amount})
+        query.add("utxo",sha256(double_quote(str({x["to"]:gassed_amount,"block":block["hash"],"lump":check_lump["hash"]})).encode()).hexdigest(),double_quote(str({x["to"]:gassed_amount,"block":block["hash"],"lump":check_lump["hash"]})))
 
 
 def handle_block_io(block):
@@ -323,7 +334,7 @@ def generate_inputs(n,topay):
         return False
 
 
-def workout_lump(topay,whom,d,e,n):
+def workout_lump(topay,whom,d,e,n,msg=""):
     addr=address(n)
     if utxos(addr)==[]:
         return False
@@ -334,11 +345,11 @@ def workout_lump(topay,whom,d,e,n):
     for x in inputs:
         tap+=ltz_round(utxo_value(x))
     if ltz_round(tap)-ltz_round(topay)==0:
-        return lump([tx(whom,ltz_round(topay),d,e,n)],inputs)
+        return lump([tx(whom,ltz_round(topay),d,e,n)],inputs,msg)
     else:
         a=tx(whom,ltz_round(topay),d,e,n)
         b=tx(addr,(ltz_round(tap)-ltz_round(topay)),d,e,n)
-        return lump([a,b],inputs)
+        return lump([a,b],inputs,msg)
 
 
 def tx_base(tx_lump=[]):
