@@ -140,11 +140,12 @@ def utxo_value(key):
     return float(query2.get("inputs",key))
 
 
-def verify_lump(check_lump,total_longest):
+def verify_lump(check_lump,total_longest,verbose=False):
     if len(str(check_lump))<=2560:
         pass
     else:
-        print("Lump length longer than 2.5 kilobytes (try sending money in smaller parts).")
+        if verbose:
+            print("Lump length longer than 2.5 kilobytes (try sending money in smaller parts).")
         return False
     check_lump=json.loads(double_quote(check_lump))
     if check_lump["hash"]==sha256(str({"txs":check_lump["txs"],"inputs":check_lump["inputs"]}).encode()).hexdigest():
@@ -155,8 +156,8 @@ def verify_lump(check_lump,total_longest):
         n_sender=address(n)
         all_txs=len(jlump["txs"])
         crt_txs=0
-        tap=0
-        spenttap=0
+        tap=0.0
+        spenttap=0.0
         for x in jlump["inputs"]:
             block_id=json.loads(open(f"utxo\\{x}").read())["block"]
             if block_id in total_longest:
@@ -168,8 +169,12 @@ def verify_lump(check_lump,total_longest):
         if spenttap==tap and crt_txs==all_txs:
             return True
         else:
+            if verbose:
+                print("TX's of this lump are not valid")
             return False
     else:
+        if verbose:
+            print("Hash Mis-Match")
         return False
 
 

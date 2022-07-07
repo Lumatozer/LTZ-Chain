@@ -401,8 +401,8 @@ def send():
                 continue
             tx_lump_result=workout_lump(round(float(amount),8),send_to,d,e,n)
             if tx_lump_result==False:
-                print("Invalid Lump!")
-            elif verify_lump(tx_lump_result,array_all_in_one(get_longest()))==False:
+                print("Invalid Lump Details!")
+            elif verify_lump(tx_lump_result,array_all_in_one(get_longest()),verbose=True)==False:
                 print("Lump verification Failed")
             else:
                 broadcast(tx_lump_result,type="lump")
