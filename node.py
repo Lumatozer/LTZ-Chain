@@ -56,6 +56,21 @@ msg_used=[]
 in_sync={}
 true_lumps=[]
 
+def not_common_lists(list1, list2):
+    for x in list1:
+        for y in list2:
+            if x == y:
+                return False
+    return True
+
+def not_in_truelumps(lump):
+    for x in true_lumps:
+        if not_common_lists(json.loads(double_quote(x))["inputs"],json.loads(double_quote(lump))["inputs"]):
+            pass
+        else:
+            return False
+    return True
+
 def relay(raw_msg):
     global allc
     cc_allc=allc.copy()
@@ -159,11 +174,11 @@ def client_handeler(client):
                         
                 
                 elif msg_filter(received_msg, "type")=="lump":
-                    if verify_lump(data,array_all_in_one(get_longest())):
+                    if verify_lump(data,array_all_in_one(get_longest())) and json.loads(double_quote(data)) not in true_lumps and not_in_truelumps(data):
                         true_lumps.append(data)
                         relay(received_msg.encode())
                     else:
-                        print("Invalid lump broadcasted")    
+                        print("An invalid lump was broadcasted.")
                 
                 elif msg_filter(received_msg, "type")=="block":
                     relay(received_msg.encode())

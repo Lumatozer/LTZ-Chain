@@ -137,7 +137,7 @@ class lump:
 
 
 def utxo_value(key):
-    return float(query2.get("inputs",key))
+    return round(float(query2.get("inputs",key)),8)
 
 
 def verify_lump(check_lump,total_longest,verbose=False):
@@ -290,7 +290,7 @@ def msg_filter(msg,query):
 
 def generate_inputs(n,topay):
     addr=address(n)
-    if balance(addr)>=topay:
+    if balance(addr)>=round(float(topay),8):
         allowed_inputs=utxos(addr)
         input_balances=[]
         for x in allowed_inputs:
@@ -300,14 +300,14 @@ def generate_inputs(n,topay):
         input_balances.sort()
         inputs_to_use=[]
         for x in input_balances:
-            if x>=topay:
+            if x>=round(float(topay),8):
                 inputs_to_use.append(allowed_inputs[cc_ib.index(x)])
                 break
         if inputs_to_use==[]:
             in_val=0
             using_now=[]
             for x in input_balances:
-                if in_val>=topay:
+                if in_val>=round(float(topay),8):
                     print(using_now)
                     break
                 else:
@@ -324,17 +324,17 @@ def workout_lump(topay,whom,d,e,n):
     addr=address(n)
     if utxos(addr)==[]:
         return False
-    inputs=generate_inputs(n,topay)
+    inputs=generate_inputs(n,round(float(topay),8))
     if inputs==False:
         return False
     tap=0
     for x in inputs:
-        tap+=utxo_value(x)
-    if tap-topay==0:
-        return lump([tx(whom,topay,d,e,n)],inputs)
+        tap+=round(float(utxo_value(x)),8)
+    if round(float(tap),8)-round(float(topay),8)==0:
+        return lump([tx(whom,round(float(topay),8),d,e,n)],inputs)
     else:
-        a=tx(whom,topay,d,e,n)
-        b=tx(addr,(tap-topay),d,e,n)
+        a=tx(whom,round(float(topay),8),d,e,n)
+        b=tx(addr,(round(float(tap),8)-round(float(topay),8)),d,e,n)
         return lump([a,b],inputs)
 
 
