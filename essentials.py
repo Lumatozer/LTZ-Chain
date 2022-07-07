@@ -13,7 +13,7 @@ BASE = len(ALPHABET)
 SIGN_CHARACTER = '$'
 
 def ltz_round(num):
-    return round(float(num),8)
+    return round(float(num),4)
 
 def num_encode(n):
     if n < 0:
@@ -167,7 +167,7 @@ def verify_lump(check_lump,total_longest,verbose=False):
             if block_id in total_longest:
                 tap+=ltz_round(utxo_value(x))
         for x in jlump['txs']:
-            if alursa.verify(int(num_decode(x["sign"])),sha256((n_sender+str(x["to"])+str(x["amount"])).encode()).hexdigest(),e,n) and n_sender==input_sender and round(float(x["amount"]),8)>0.0:
+            if alursa.verify(int(num_decode(x["sign"])),sha256((n_sender+str(x["to"])+str(x["amount"])).encode()).hexdigest(),e,n) and n_sender==input_sender and ltz_round(x["amount"])>0.0:
                 spenttap+=ltz_round(x["amount"])
                 crt_txs+=1
         if ltz_round(spenttap)==ltz_round(tap) and crt_txs==all_txs:
@@ -182,12 +182,15 @@ def verify_lump(check_lump,total_longest,verbose=False):
         return False
 
 
-def calculate_gas(check_lump):
+def calculate_gas(check_lump,amount):
     check_lump=json.loads(double_quote(check_lump))
     msg=str(check_lump["msg"])
     if len(msg)==0:
         return 0.0
-    return ltz_round(len(msg)/512)
+    if amount>=0.01:
+        return ltz_round(len(msg)/512)
+    else:
+        return 0.99
 
 
 def handle_lump_io(check_lump,block):

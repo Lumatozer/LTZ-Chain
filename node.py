@@ -421,7 +421,7 @@ def send():
                 except:
                     print("Invalid Amount")
                     continue
-                tx_lump_result=workout_lump(round(float(amount),8),send_to,d,e,n)
+                tx_lump_result=workout_lump(ltz_round(amount),send_to,d,e,n)
                 if tx_lump_result==False:
                     print("Invalid Lump Details!")
                 elif verify_lump(tx_lump_result,array_all_in_one(get_longest()),verbose=True)==False:
@@ -439,7 +439,7 @@ def send():
                 except:
                     print("Invalid Amount")
                     continue
-                tx_lump_result=workout_lump(round(float(amount),8),send_to,d,e,n,contract)
+                tx_lump_result=workout_lump(ltz_round(amount),send_to,d,e,n,contract)
                 if tx_lump_result==False:
                     print("Invalid Lump Details!")
                 elif verify_lump(tx_lump_result,array_all_in_one(get_longest()),verbose=True)==False:
