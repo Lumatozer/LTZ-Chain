@@ -174,11 +174,16 @@ def client_handeler(client):
                         
                 
                 elif msg_filter(received_msg, "type")=="lump":
-                    if verify_lump(data,array_all_in_one(get_longest())) and json.loads(double_quote(data)) not in true_lumps and not_in_truelumps(data):
-                        true_lumps.append(data)
-                        relay(received_msg.encode())
-                    else:
-                        print("An invalid lump was broadcasted.")
+                    try:
+                        if verify_lump(data,array_all_in_one(get_longest())) and json.loads(double_quote(data)) not in true_lumps and not_in_truelumps(data):
+                            true_lumps.append(data)
+                            relay(received_msg.encode())
+                        elif verbose:
+                            print("An invalid lump was broadcasted.")
+                    except:
+                        if sys_verbose:
+                            traceback.print_exc()
+                        print("Error verifying lump")
                 
                 elif msg_filter(received_msg, "type")=="block":
                     relay(received_msg.encode())
@@ -309,25 +314,60 @@ def send():
     global firstpeer
     global relay_msg
     while True:
-        raw_msg=input("Node >> ")
+        try:
+            raw_msg=input("Node >> ")
 
-        if 1==0:
-            pass
-        
-        elif raw_msg=="add":
-            print("~~-Add-New-Peer-~~")
-            sc=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
-            try:
-                sc.connect((input("I.P. : ").replace(" ",""),int(input("PORT : ").replace(" ",""))))
-            except:
-                print(f"ERROR : Unable to connect to given ip::port combination.")
-                continue
-            allc[sc]=sc
-            t1=threading.Thread(target=client_handeler,args=(sc,))
-            t1.start()
-            print("Peer added to list!")
-            if firstpeer==True:
-                firstpeer==False
+            if 1==0:
+                pass
+            
+            elif raw_msg=="add":
+                print("~~-Add-New-Peer-~~")
+                sc=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+                try:
+                    sc.connect((input("I.P. : ").replace(" ",""),int(input("PORT : ").replace(" ",""))))
+                except:
+                    print(f"ERROR : Unable to connect to given ip::port combination.")
+                    continue
+                allc[sc]=sc
+                t1=threading.Thread(target=client_handeler,args=(sc,))
+                t1.start()
+                print("Peer added to list!")
+                if firstpeer==True:
+                    firstpeer==False
+                    sync_client=next(iter(allc))
+                    uid=uidgen()
+                    if is_chain_empty():
+                        lb=0
+                    else:
+                        lb=get_building_hash()
+                    msg=double_quote(msgen(lb,uid,"sync_req"))
+                    sync_client.send(str(len(msg.encode())).encode())
+                    sync_client.send(msg.encode())
+            
+            elif raw_msg=="default peer":
+                sc=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+                try:
+                    sc.connect(("department-bucks.at.playit.gg",60622))
+                except:
+                    print(f"ERROR : Unable to connect to default peer.")
+                    continue
+                allc[sc]=sc
+                t1=threading.Thread(target=client_handeler,args=(sc,))
+                t1.start()
+                print("Peer added to list!")
+                if firstpeer==True:
+                    firstpeer==False
+                    sync_client=next(iter(allc))
+                    uid=uidgen()
+                    if is_chain_empty():
+                        lb=0
+                    else:
+                        lb=get_building_hash()
+                    msg=double_quote(msgen(lb,uid,"sync_req"))
+                    sync_client.send(str(len(msg.encode())).encode())
+                    sync_client.send(msg.encode())
+            
+            elif raw_msg=="sync":
                 sync_client=next(iter(allc))
                 uid=uidgen()
                 if is_chain_empty():
@@ -337,126 +377,94 @@ def send():
                 msg=double_quote(msgen(lb,uid,"sync_req"))
                 sync_client.send(str(len(msg.encode())).encode())
                 sync_client.send(msg.encode())
-        
-        elif raw_msg=="default peer":
-            sc=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
-            try:
-                sc.connect(("department-bucks.at.playit.gg",60622))
-            except:
-                print(f"ERROR : Unable to connect to default peer.")
-                continue
-            allc[sc]=sc
-            t1=threading.Thread(target=client_handeler,args=(sc,))
-            t1.start()
-            print("Peer added to list!")
-            if firstpeer==True:
-                firstpeer==False
-                sync_client=next(iter(allc))
-                uid=uidgen()
-                if is_chain_empty():
-                    lb=0
+            
+            elif raw_msg=="coinbase":
+                coinbase=input("Set custom coinbase value : ")
+            
+            elif raw_msg=="sys verbose":
+                if sys_verbose==False:
+                    print("Sys-Verbose Enabled")
+                    sys_verbose=True
+                elif sys_verbose:
+                    print("Sys-Verbose Disabled")
+                    sys_verbose=False
+            
+            elif raw_msg=="messaging":
+                if relay_msg==False:
+                    print("Messaging Enabled")
+                    relay_msg=True
+                elif relay_msg:
+                    print("Messaging Disabled")
+                    relay_msg=False
+            
+            elif raw_msg=="save settings":
+                with open("settings.json","w+") as fw:
+                    fw.write(json.dumps({"verbose":verbose,"sys verbose":sys_verbose,"msg":relay_msg}))
+
+            elif raw_msg=="hashrate":
+                hash_test.rate_check()
+
+            elif raw_msg=="verbose":
+                if verbose==False:
+                    print("Verbose Enabled")
+                    verbose=True
+                elif verbose:
+                    print("Verbose Disabled")
+                    verbose=False
+            
+            elif raw_msg=="tx":
+                send_to=input("Receiver : ").replace(" ","")
+                amount=input("Amount (number) : ").replace(" ","")
+                try:
+                    float(amount)
+                except:
+                    print("Invalid Amount")
+                    continue
+                tx_lump_result=workout_lump(round(float(amount),8),send_to,d,e,n)
+                if tx_lump_result==False:
+                    print("Invalid Lump Details!")
+                elif verify_lump(tx_lump_result,array_all_in_one(get_longest()),verbose=True)==False:
+                    print("Lump verification Failed")
                 else:
-                    lb=get_building_hash()
-                msg=double_quote(msgen(lb,uid,"sync_req"))
-                sync_client.send(str(len(msg.encode())).encode())
-                sync_client.send(msg.encode())
-        
-        elif raw_msg=="sync":
-            sync_client=next(iter(allc))
-            uid=uidgen()
-            if is_chain_empty():
-                lb=0
+                    broadcast(tx_lump_result,type="lump")
+                    print("Broadcasted")
+            
+            elif raw_msg=="balance" or raw_msg=="bal":
+                print(f"Blockchain ->  Address : {node_addr}\n Balance : {balance(node_addr)} LTZ")
+
+            elif raw_msg=="see bal" or raw_msg=="see balance":
+                check_addr=input("Enter Address : ").replace(" ","")
+                print(f"Blockchain{' -> {'}\n Address : {check_addr}\n Balance : {balance(check_addr)} LTZ"+"\n}")
+            
+            elif raw_msg=="mine empty":
+                threading.Thread(target=base_mineempty).start()
+            
+            elif raw_msg=="mine loop":
+                thread_loop_mine()
+            
+            elif raw_msg=="address" or raw_msg=="addr":
+                print(node_addr)
+            
+            elif raw_msg=="utxos":
+                action=input("Enter address (empty for self): ").replace(" ","")
+                if action=="":
+                    print(json.dumps(utxos(node_addr),indent=3))
+                else:
+                    print(json.dumps(utxos(action),indent=3))
+            
+            elif raw_msg=="top block":
+                print(get_building_hash())
+            
+            elif raw_msg=="longest branch":
+                print(json.dumps(get_longest(),indent=3))
+            
             else:
-                lb=get_building_hash()
-            msg=double_quote(msgen(lb,uid,"sync_req"))
-            sync_client.send(str(len(msg.encode())).encode())
-            sync_client.send(msg.encode())
-        
-        elif raw_msg=="coinbase":
-            coinbase=input("Set custom coinbase value : ")
-        
-        elif raw_msg=="sys verbose":
-            if sys_verbose==False:
-                print("Sys-Verbose Enabled")
-                sys_verbose=True
-            elif sys_verbose:
-                print("Sys-Verbose Disabled")
-                sys_verbose=False
-        
-        elif raw_msg=="messaging":
-            if relay_msg==False:
-                print("Messaging Enabled")
-                relay_msg=True
-            elif relay_msg:
-                print("Messaging Disabled")
-                relay_msg=False
-        
-        elif raw_msg=="save settings":
-            with open("settings.json","w+") as fw:
-                fw.write(json.dumps({"verbose":verbose,"sys verbose":sys_verbose,"msg":relay_msg}))
-
-        elif raw_msg=="hashrate":
-            hash_test.rate_check()
-
-        elif raw_msg=="verbose":
-            if verbose==False:
-                print("Verbose Enabled")
-                verbose=True
-            elif verbose:
-                print("Verbose Disabled")
-                verbose=False
-        
-        elif raw_msg=="tx":
-            send_to=input("Receiver : ").replace(" ","")
-            amount=input("Amount (number) : ").replace(" ","")
-            try:
-                float(amount)
-            except:
-                print("Invalid Amount")
-                continue
-            tx_lump_result=workout_lump(round(float(amount),8),send_to,d,e,n)
-            if tx_lump_result==False:
-                print("Invalid Lump Details!")
-            elif verify_lump(tx_lump_result,array_all_in_one(get_longest()),verbose=True)==False:
-                print("Lump verification Failed")
-            else:
-                broadcast(tx_lump_result,type="lump")
-                print("Broadcasted")
-        
-        elif raw_msg=="balance" or raw_msg=="bal":
-            print(f"Blockchain ->  Address : {node_addr}\n Balance : {balance(node_addr)} LTZ")
-
-        elif raw_msg=="see bal" or raw_msg=="see balance":
-            check_addr=input("Enter Address : ").replace(" ","")
-            print(f"Blockchain{' -> {'}\n Address : {check_addr}\n Balance : {balance(check_addr)} LTZ"+"\n}")
-        
-        elif raw_msg=="mine empty":
-            threading.Thread(target=base_mineempty).start()
-        
-        elif raw_msg=="mine loop":
-            thread_loop_mine()
-        
-        elif raw_msg=="address" or raw_msg=="addr":
-            print(node_addr)
-        
-        elif raw_msg=="utxos":
-            action=input("Enter address (empty for self): ").replace(" ","")
-            if action=="":
-                print(json.dumps(utxos(node_addr),indent=3))
-            else:
-                print(json.dumps(utxos(action),indent=3))
-        
-        elif raw_msg=="top block":
-            print(get_building_hash())
-        
-        elif raw_msg=="longest branch":
-            print(json.dumps(get_longest(),indent=3))
-        
-        else:
-            if relay_msg:
-                mined_msg=msg_mine(raw_msg)
-                broadcast(mined_msg,append=True)
-
+                if relay_msg:
+                    mined_msg=msg_mine(raw_msg)
+                    broadcast(mined_msg,append=True)
+        except:
+            if sys_verbose:
+                traceback.print_exc()
 
 def loop_mine_thread():
     global true_lumps
