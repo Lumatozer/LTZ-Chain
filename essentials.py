@@ -160,7 +160,7 @@ def verify_lump(check_lump,total_longest):
         for x in jlump["inputs"]:
             block_id=json.loads(open(f"utxo\\{x}").read())["block"]
             if block_id in total_longest:
-                tap+=utxo_value(x)
+                tap+=round(float(utxo_value(x)),8)
         for x in jlump['txs']:
             if alursa.verify(x["sign"],sha256((n_sender+str(x["to"])+str(x["amount"])).encode()).hexdigest(),e,n) and n_sender==input_sender:
                 spenttap+=round(float(x["amount"]),8)
@@ -184,7 +184,7 @@ def handle_lump_io(check_lump,block):
 
 
 def handle_block_io(block):
-    reward=0.03
+    reward=0.3
     block=json.loads(double_quote(block))
     query.add("chain",block["hash"],double_quote(block))
     query2.append("chain",block["hash"],block["prev"])
