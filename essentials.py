@@ -5,6 +5,31 @@ import json,alursa,os
 from branching import *
 from query2 import query2
 
+import string
+ALPHABET = string.ascii_uppercase + string.ascii_lowercase + \
+string.digits + '-_'
+ALPHABET_REVERSE = dict((c, i) for (i, c) in enumerate(ALPHABET))
+BASE = len(ALPHABET)
+SIGN_CHARACTER = '$'
+
+def num_encode(n):
+    if n < 0:
+        return SIGN_CHARACTER + num_encode(-n)
+    s = []
+    while True:
+        n, r = divmod(n, BASE)
+        s.append(ALPHABET[r])
+        if n == 0: break
+    return ''.join(reversed(s))
+
+def num_decode(s):
+    if s[0] == SIGN_CHARACTER:
+        return -num_decode(s[1:])
+    n = 0
+    for c in s:
+        n = n * BASE + ALPHABET_REVERSE[c]
+    return n
+
 def dict_keyval(dict):
     key_1=str(dict.keys()).replace("'","").replace('"',"")[11:-2]
     return key_1,dict[key_1]
@@ -96,8 +121,8 @@ class tx:
         self.to=to
         self.amount=amount
         self.sign=alursa.signature(sha256((str(address(n))+str(self.to)+str(self.amount)).encode()).hexdigest(),d,n)
-        self.n=n
-        self.e=e
+        self.n=num_encode(n)
+        self.e=num_encode(e)
     def __repr__(self):
         return str({"sign":self.sign,"n":self.n,"e":self.e,"to":self.to,"amount":self.amount})
 
@@ -125,8 +150,8 @@ def verify_lump(check_lump,total_longest):
     if check_lump["hash"]==sha256(str({"txs":check_lump["txs"],"inputs":check_lump["inputs"]}).encode()).hexdigest():
         jlump=json.loads(double_quote(check_lump))
         input_sender=utxo_person(jlump["inputs"][0])
-        e=jlump["txs"][0]["e"]
-        n=jlump["txs"][0]["n"]
+        e=int(num_decode(jlump["txs"][0]["e"]))
+        n=int(num_decode(jlump["txs"][0]["n"]))
         n_sender=address(n)
         all_txs=len(jlump["txs"])
         crt_txs=0
