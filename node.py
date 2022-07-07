@@ -161,7 +161,7 @@ def client_handeler(client):
                 elif msg_filter(received_msg, "type")=="lump":
                     if verify_lump(data,array_all_in_one(get_longest())):
                         true_lumps.append(data)
-                        relay(received_msg.encode())    
+                        relay(received_msg.encode())
                     else:
                         print("Invalid lump broadcasted")    
                 
