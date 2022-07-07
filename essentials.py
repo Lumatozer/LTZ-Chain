@@ -182,15 +182,12 @@ def verify_lump(check_lump,total_longest,verbose=False):
         return False
 
 
-def calculate_gas(check_lump,amount):
+def calculate_gas(check_lump):
     check_lump=json.loads(double_quote(check_lump))
     msg=str(check_lump["msg"])
     if len(msg)==0:
         return 0.0
-    if amount>=0.01:
-        return ltz_round(len(msg)/512)
-    else:
-        return 0.99
+    return ltz_round(len(msg)/512)
 
 
 def handle_lump_io(check_lump,block):
