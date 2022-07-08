@@ -23,6 +23,8 @@ logovar="""""""""
 """""""""
 settings=None
 import json
+
+from alursa import make_kp
 def load_settings():
     global settings
     try:
@@ -30,6 +32,7 @@ def load_settings():
             settings=json.loads(fw.read())
     except:
         raise Exception("No settings.json file found!")
+
 load_settings()
 relay_msg=settings["msg"]
 firstpeer=True
@@ -56,6 +59,26 @@ msg_used=[]
 in_sync={}
 true_lumps=[]
 true_contracts=[]
+
+def remove_overlapping():
+    global true_lumps
+    cc_tl=true_lumps.copy()
+    all_inputs=[]
+    for x in true_lumps:
+        abort=False
+        if abort==False:
+            for y in x["inputs"]:
+                if abort==False:
+                    if y in all_inputs:
+                        cc_tl.remove(x)
+                        abort=True
+                    else:
+                        all_inputs.append(y)
+                else:
+                    continue
+        else:
+            continue
+    true_lumps=cc_tl
 
 def not_common_lists(list1, list2):
     for x in list1:
@@ -125,13 +148,10 @@ def broadcast(raw_msg,type="msg",append=False):
 
 def client_handeler(client):
     cc=client
-    global allc
-    global verbose
-    global true_lumps
-    global used
-    global initial_sync
+    global allc,verbose,true_lumps,used,initial_sync
     while True:
         try:
+            to_relay=True
             msg_len=client.recv(1024).decode()
             if msg_gen=="":
                 print("disconnected")
@@ -150,20 +170,17 @@ def client_handeler(client):
                 break
             
             try:
-                json.loads(received_msg)
-                msg_filter(received_msg,"type")
-                msg_filter(received_msg,"data")
-            
+                json.loads(received_msg)["data"]
+                json.loads(received_msg)["type"]
+                json.loads(received_msg)["uid"]
             except:
-                print("Error : Invalid Message")
                 if sys_verbose:
+                    print("Error : Invalid Message")
                     print(received_msg)
                 continue
-            
             if  msg_filter(received_msg,"uid") not in used:
                 used.append(msg_filter(received_msg,"uid"))
                 data=msg_filter(received_msg, "data")
-                
                 if msg_filter(received_msg, "type")=="msg":
                     if msg_check(data,msg_used):
                         if verbose==True:
@@ -173,7 +190,6 @@ def client_handeler(client):
                         else:
                             relay(received_msg.encode())
                         
-                
                 elif msg_filter(received_msg, "type")=="lump":
                     try:
                         if verify_lump(data,array_all_in_one(get_longest())) and json.loads(double_quote(data)) not in true_lumps and not_in_truelumps(data):
@@ -306,14 +322,7 @@ def thread_loop_mine():
     threading.Thread(target=loop_mine).start()
 
 def send():
-    global verbose
-    global allc
-    global used
-    global coinbase
-    global true_lumps
-    global sys_verbose
-    global firstpeer
-    global relay_msg
+    global relay_msg,firstpeer,sys_verbose,true_lumps,coinbase,used,allc,verbose
     while True:
         try:
             raw_msg=input("Node >> ")
@@ -430,10 +439,10 @@ def send():
                     broadcast(tx_lump_result,type="lump")
                     print("Broadcasted")
             
-            elif raw_msg=="contract tx":
-                send_to=input("Receiver : ").replace(" ","")
-                amount=input("Amount (number) : ").replace(" ","")
-                contract=input("Contract (len < 512 characters) : ")
+            elif raw_msg=="contract":
+                send_to=input("Contract Incentive Receiver : ").replace(" ","")
+                amount=input("Amount : ").replace(" ","")
+                contract=input("Contract (len < 512 chars) : ")
                 try:
                     float(amount)
                 except:
@@ -490,8 +499,9 @@ def loop_mine_thread():
     import time
     while True:
         time.sleep(0.1)
-        cc_truelumps=true_lumps.copy()
-        if len(cc_truelumps)!=0:
+        if len(true_lumps)!=0:
+            remove_overlapping()
+            cc_truelumps=true_lumps.copy()
             if len(cc_truelumps)>=300:
                 tx=tx_base(cc_truelumps[0:300])
                 del cc_truelumps[:300]

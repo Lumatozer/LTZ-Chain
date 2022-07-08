@@ -143,14 +143,22 @@ class lump:
 def utxo_value(key):
     return ltz_round(query2.get("inputs",key))
 
+def calculate_gas(check_lump):
+    check_lump=json.loads(double_quote(check_lump))
+    msg=str(check_lump["msg"])
+    if len(msg)==0:
+        return 0.0
+    return ltz_round(len(msg)/51200)
 
 def verify_lump(check_lump,total_longest,verbose=False):
     if len(str(check_lump))<=3072 and len(str(json.loads(double_quote(check_lump))["msg"]))<=512:
         pass
     else:
         if verbose:
-            print("Lump length longer than 2.5 kilobytes (try sending money in smaller parts).")
+            print("Lump length longer than 3 kilobytes.(try sending money in smaller pportions)")
         return False
+    gas=calculate_gas(check_lump)
+    minimum=0.01
     check_lump=json.loads(double_quote(check_lump))
     if check_lump["hash"]==sha256(str({"txs":check_lump["txs"],"inputs":check_lump["inputs"],"msg":check_lump["msg"]}).encode()).hexdigest():
         jlump=json.loads(double_quote(check_lump))
@@ -166,6 +174,11 @@ def verify_lump(check_lump,total_longest,verbose=False):
             block_id=json.loads(open(f"utxo\\{x}").read())["block"]
             if block_id in total_longest:
                 tap+=ltz_round(utxo_value(x))
+        if ltz_round(gas)>0:
+            if ltz_round(tap)<ltz_round(minimum):
+                if verbose:
+                    print("Not enough Gas.")
+                return False
         for x in jlump['txs']:
             if alursa.verify(int(num_decode(x["sign"])),sha256((n_sender+str(x["to"])+str(x["amount"])).encode()).hexdigest(),e,n) and n_sender==input_sender and ltz_round(x["amount"])>0.0:
                 spenttap+=ltz_round(x["amount"])
@@ -180,14 +193,6 @@ def verify_lump(check_lump,total_longest,verbose=False):
         if verbose:
             print("Hash Mis-Match")
         return False
-
-
-def calculate_gas(check_lump):
-    check_lump=json.loads(double_quote(check_lump))
-    msg=str(check_lump["msg"])
-    if len(msg)==0:
-        return 0.0
-    return ltz_round(len(msg)/512)
 
 
 def handle_lump_io(check_lump,block):
