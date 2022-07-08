@@ -148,17 +148,17 @@ def calculate_gas(check_lump):
     msg=str(check_lump["msg"])
     if len(msg)==0:
         return 0.0
-    return ltz_round(len(msg)/51200)
+    return ltz_round(len(msg)/512)
 
 def verify_lump(check_lump,total_longest,verbose=False):
     if len(str(check_lump))<=3072 and len(str(json.loads(double_quote(check_lump))["msg"]))<=512:
         pass
     else:
         if verbose:
-            print("Lump length longer than 3 kilobytes.(try sending money in smaller pportions)")
+            print("Lump length longer than 3 kilobytes.(try sending money in smaller portions)")
         return False
     gas=calculate_gas(check_lump)
-    minimum=0.01
+    minimum=0.1
     check_lump=json.loads(double_quote(check_lump))
     if check_lump["hash"]==sha256(str({"txs":check_lump["txs"],"inputs":check_lump["inputs"],"msg":check_lump["msg"]}).encode()).hexdigest():
         jlump=json.loads(double_quote(check_lump))
@@ -317,6 +317,7 @@ def generate_inputs(n,topay):
             input_balances.append(y)
         cc_ib=input_balances.copy()
         input_balances.sort()
+        input_balances.reverse()
         inputs_to_use=[]
         for x in input_balances:
             if x>=ltz_round(topay):
