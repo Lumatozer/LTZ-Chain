@@ -203,7 +203,7 @@ def handle_lump_io(check_lump,block):
 
 
 def handle_block_io(block):
-    reward=0.1
+    reward=1
     block=json.loads(double_quote(block))
     query.add("chain",block["hash"],double_quote(block))
     query2.append("chain",block["hash"],block["prev"])
