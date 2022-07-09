@@ -104,7 +104,6 @@ def utxos(addr):
 
 
 def balance(addr):
-    test_longest_branch=array_all_in_one(get_longest())
     paesa=0
     inputs=query2.givedb("inputs")
     utx=utxos(addr)
