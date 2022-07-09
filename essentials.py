@@ -86,18 +86,6 @@ def array_all_in_one(t_array: list):
     return out_arr
 
 
-def balance(addr):
-    longest_branch=get_longest()
-    test_longest_branch=array_all_in_one(longest_branch)
-    paesa=0
-    inputs=query2.givedb("inputs")
-    for x in inputs:
-        base=dict_keyval(dict_keyval(x)[1])
-        if base[0]==addr:
-            paesa+=float(base[1])
-    return ltz_round(paesa)
-
-
 def utxos(addr):
     ips=[]
     longest_branch=get_longest()
@@ -115,30 +103,21 @@ def utxos(addr):
     return ips
 
 
+def balance(addr):
+    test_longest_branch=array_all_in_one(get_longest())
+    paesa=0
+    inputs=query2.givedb("inputs")
+    utx=utxos(addr)
+    for x in inputs:
+        if dict_keyval(x)[0] in utx:
+            base=dict_keyval(dict_keyval(x)[1])
+            if base[0]==addr:
+                paesa+=float(base[1])
+    return ltz_round(paesa)
+
+
 def key_hash(a,b):
     return sha256(f"{a}.{b}".encode()).hexdigest()
-
-
-class tx:
-    def __init__(self,to,amount,d,e,n) -> None:
-        self.to=to
-        self.amount=amount
-        self.sign=num_encode(int(alursa.signature(sha256((str(address(n))+str(self.to)+str(self.amount)).encode()).hexdigest(),d,n)))
-        self.n=num_encode(n)
-        self.e=num_encode(e)
-    def __repr__(self):
-        return str({"sign":self.sign,"n":self.n,"e":self.e,"to":self.to,"amount":self.amount})
-
-
-class lump:
-    def __init__(self,txs: list,inputs: list,msg="") -> None:
-        self.txs=txs
-        self.inputs=inputs
-        self.msg=msg
-        self.hash=sha256(str({"txs":self.txs,"inputs":self.inputs,"msg":self.msg}).encode()).hexdigest()
-    def __repr__(self):
-        return str({"txs":self.txs,"inputs":self.inputs,"msg":self.msg,"hash":self.hash})
-
 
 def utxo_value(key):
     return ltz_round(query2.get("inputs",key))
@@ -150,22 +129,39 @@ def calculate_gas(check_lump):
         return 0.0
     return ltz_round(len(msg)/512)
 
+
+class tx:
+    def __init__(self,to,amount) -> None:
+        self.to=to
+        self.amount=amount
+    def __repr__(self):
+        return str({"to":self.to,"amount":self.amount})
+
+
+class lump:
+    def __init__(self,txs: list,d,e,n,inputs: list,msg="",) -> None:
+        self.txs=txs
+        self.inputs=inputs
+        self.msg=msg
+        self.n=num_encode(n)
+        self.e=num_encode(e)
+        self.hash=sha256(str({"txs":self.txs,"inputs":self.inputs,"msg":self.msg}).encode()).hexdigest()
+        self.sign=num_encode(int(alursa.signature(self.hash,d,n)))
+    def __repr__(self):
+        return str({"txs":self.txs,"inputs":self.inputs,"msg":self.msg,"hash":self.hash,"e":self.e,"n":self.n,"sign":self.sign})
+
 def verify_lump(check_lump,total_longest,verbose=False):
-    if len(str(check_lump))<=3072 and len(str(json.loads(double_quote(check_lump))["msg"]))<=512:
+    if len(str(check_lump))<=1536 and len(str(json.loads(double_quote(check_lump))["msg"]))<=512:
         pass
     else:
         if verbose:
-            print("Lump length longer than 3 kilobytes.(try sending money in smaller portions)")
+            print("Lump length longer than 2 kilobytes.(try sending money in smaller portions)")
         return False
     gas=calculate_gas(check_lump)
     minimum=0.1
     check_lump=json.loads(double_quote(check_lump))
-    if check_lump["hash"]==sha256(str({"txs":check_lump["txs"],"inputs":check_lump["inputs"],"msg":check_lump["msg"]}).encode()).hexdigest():
+    if check_lump["hash"]==sha256(str({"txs":check_lump["txs"],"inputs":check_lump["inputs"],"msg":check_lump["msg"]}).encode()).hexdigest() and alursa.verify(num_decode(check_lump["sign"]),check_lump["hash"],num_decode(check_lump["e"]),num_decode(check_lump["n"])):
         jlump=json.loads(double_quote(check_lump))
-        input_sender=utxo_person(jlump["inputs"][0])
-        e=int(num_decode(jlump["txs"][0]["e"]))
-        n=int(num_decode(jlump["txs"][0]["n"]))
-        n_sender=address(n)
         all_txs=len(jlump["txs"])
         crt_txs=0
         tap=0
@@ -180,9 +176,8 @@ def verify_lump(check_lump,total_longest,verbose=False):
                     print("Not enough Gas.")
                 return False
         for x in jlump['txs']:
-            if alursa.verify(int(num_decode(x["sign"])),sha256((n_sender+str(x["to"])+str(x["amount"])).encode()).hexdigest(),e,n) and n_sender==input_sender and ltz_round(x["amount"])>0.0:
-                spenttap+=ltz_round(x["amount"])
-                crt_txs+=1
+            spenttap+=ltz_round(x["amount"])
+            crt_txs+=1
         if ltz_round(spenttap)==ltz_round(tap) and crt_txs==all_txs:
             return True
         else:
@@ -203,7 +198,7 @@ def handle_lump_io(check_lump,block):
         query2.remove("inputs",x)
     for x in check_lump["txs"]:
         gassed_amount=ltz_round(ltz_round((100-gas)/100)*ltz_round(x["amount"]))
-        query2.append("inputs",sha256(double_quote(str({x["to"]:gassed_amount,"block":block["hash"],"lump":check_lump["hash"]})).encode()).hexdigest(),{x["to"]:gassed_amount})
+        query2.append("inputs",(sha256(double_quote(str({x["to"]:gassed_amount,"block":block["hash"],"lump":check_lump["hash"]})).encode()).hexdigest()+","+block["hash"]),{x["to"]:gassed_amount})
         query.add("utxo",sha256(double_quote(str({x["to"]:gassed_amount,"block":block["hash"],"lump":check_lump["hash"]})).encode()).hexdigest(),double_quote(str({x["to"]:gassed_amount,"block":block["hash"],"lump":check_lump["hash"]})))
 
 
@@ -267,7 +262,7 @@ def mine(trans,pkey,coinbase: str):
             trans["coinbase"]=coinbase
             trans["miner"]=pkey
             base={"checksum":sha256(double_quote(trans).encode()).hexdigest(),"nonce":0}
-            while sha256(double_quote(base).encode()).hexdigest()[0:5]!="00000":
+            while sha256(double_quote(base).encode()).hexdigest()[0:6]!="000000":
                 base["nonce"]+=1    
             trans["hash"]=sha256(double_quote(base).encode()).hexdigest()
             trans["nonce"]=base["nonce"]
@@ -278,7 +273,7 @@ def mine(trans,pkey,coinbase: str):
         trans["coinbase"]=coinbase
         trans["miner"]=pkey
         base={"checksum":sha256(double_quote(trans).encode()).hexdigest(),"nonce":0}
-        while sha256(double_quote(base).encode()).hexdigest()[0:5]!="00000":
+        while sha256(double_quote(base).encode()).hexdigest()[0:6]!="000000":
             base["nonce"]+=1    
         trans["hash"]=sha256(double_quote(base).encode()).hexdigest()
         trans["nonce"]=base["nonce"]
@@ -351,11 +346,11 @@ def workout_lump(topay,whom,d,e,n,msg=""):
     for x in inputs:
         tap+=ltz_round(utxo_value(x))
     if ltz_round(tap)-ltz_round(topay)==0:
-        return lump([tx(whom,ltz_round(topay),d,e,n)],inputs,msg)
+        return lump([tx(whom,ltz_round(topay))],d,e,n,inputs,msg)
     else:
-        a=tx(whom,ltz_round(topay),d,e,n)
-        b=tx(addr,(ltz_round(tap)-ltz_round(topay)),d,e,n)
-        return lump([a,b],inputs,msg)
+        a=tx(whom,ltz_round(topay))
+        b=tx(addr,(ltz_round(tap)-ltz_round(topay)))
+        return lump([a,b],d,e,n,inputs,msg)
 
 
 def tx_base(tx_lump=[]):
@@ -363,7 +358,7 @@ def tx_base(tx_lump=[]):
 
 
 def verify_block(block):
-    if len(str(block))<=1048576:
+    if len(str(block))<=10485760:
         pass
     else:
         return False

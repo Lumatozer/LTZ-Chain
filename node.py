@@ -502,9 +502,9 @@ def loop_mine_thread():
         if len(true_lumps)!=0:
             remove_overlapping()
             cc_truelumps=true_lumps.copy()
-            if len(cc_truelumps)>=300:
-                tx=tx_base(cc_truelumps[0:300])
-                del cc_truelumps[:300]
+            if len(cc_truelumps)>=6144:
+                tx=tx_base(cc_truelumps[0:6144])
+                del cc_truelumps[:6144]
             else:
                 tx=tx_base(cc_truelumps)
                 cc_truelumps=[]
