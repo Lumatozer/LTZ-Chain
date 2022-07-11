@@ -90,13 +90,12 @@ def utxos(addr):
     ips=[]
     longest_branch=get_longest()
     test_longest_branch=array_all_in_one(longest_branch)
-    import os,json
     path="utxo"
     inputs=query2.givedb("inputs")
     for x in inputs:
         file=dict_keyval(x)[0]
         if dict_keyval(dict_keyval(x)[1])[0]==addr:
-            with open(str(f'{path}\\{file}')) as of:
+            with open(str(f'{path}/{file}')) as of:
                 block_id=json.loads(double_quote(of.read()))["block"]
                 if block_id in test_longest_branch:
                     ips.append(file)
@@ -166,7 +165,7 @@ def verify_lump(check_lump,total_longest,verbose=False):
         tap=0
         spenttap=0.0
         for x in jlump["inputs"]:
-            block_id=json.loads(open(f"utxo\\{x}").read())["block"]
+            block_id=json.loads(open(f"utxo/{x}").read())["block"]
             if block_id in total_longest:
                 tap+=ltz_round(utxo_value(x))
         if ltz_round(gas)>0:
@@ -368,7 +367,7 @@ def verify_block(block):
         return False
     if check_all_lumps(block):
         if block["prev"]!=0:
-            if os.path.exists(f'chain\\{block["prev"]}'):
+            if os.path.exists(f'chain/{block["prev"]}'):
                 cc_block=block.copy()
                 block_hash=cc_block["hash"]
                 del cc_block["hash"]
