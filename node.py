@@ -39,6 +39,7 @@ firstpeer=True
 initial_sync=True
 verbose=settings["verbose"]
 sys_verbose=settings["sys verbose"]
+coinbase=settings["coinbase"]
 print(logovar)
 import socket, threading, random,traceback,sys,hash_test
 try:
@@ -48,7 +49,6 @@ except:
 from essentials import *
 difficulty = 4
 d,e,n,node_addr = alursa.load()
-coinbase="LTZ is the best!"
 server = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
 server.bind(('127.0.0.1',port))
 print(f"Your host port is {port}")
@@ -159,7 +159,7 @@ def client_handeler(client):
             else:
                 try:
                     torecv=int(msg_len)
-                    if torecv>1048576:
+                    if torecv>11485760:
                         continue
                 except:
                     continue
@@ -316,7 +316,10 @@ def base_mineempty():
 
 def loop_mine():
     while True:
-        base_mineempty()
+        try:
+            base_mineempty()
+        except:
+            continue
 
 def thread_loop_mine():
     threading.Thread(target=loop_mine).start()
@@ -409,7 +412,7 @@ def send():
             
             elif raw_msg=="save settings":
                 with open("settings.json","w+") as fw:
-                    fw.write(json.dumps({"verbose":verbose,"sys verbose":sys_verbose,"msg":relay_msg}))
+                    fw.write(json.dumps({"verbose":verbose,"sys verbose":sys_verbose,"msg":relay_msg,"coinbase":coinbase}))
 
             elif raw_msg=="hashrate":
                 hash_test.rate_check()
