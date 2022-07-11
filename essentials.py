@@ -177,9 +177,7 @@ def verify_lump(check_lump,total_longest,verbose=False):
                 going_tap+=ltz_round(x["amount"])
             crt_txs+=1
         if ltz_round(gas)>0:
-            print(1)
             if ltz_round(going_tap)<ltz_round(minimum):
-                print(2)
                 if verbose:
                     print("Not enough Gas.")
                 return False
