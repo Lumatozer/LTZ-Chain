@@ -154,7 +154,7 @@ def verify_lump(check_lump,total_longest,verbose=False):
         pass
     else:
         if verbose:
-            print("Lump length longer than 2 kilobytes.(try sending money in smaller portions)")
+            print("Lump length longer than 2 kilobytes (try sending money in smaller portions)")
         return False
     gas=calculate_gas(check_lump)
     minimum=0.1

@@ -6,7 +6,6 @@ def dict_keyval(dict):
     base=str(dict).replace("'","").replace('"',"").split("{")
     return base[1].split(": ")[0],base[1].split(": ")[1].split("}")[0]
 def get_longest(opposite=False):
-    import os,json
     mes=[]
     prevs=[]
     tops=[]
