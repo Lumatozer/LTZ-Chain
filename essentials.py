@@ -155,32 +155,41 @@ def verify_lump(check_lump,total_longest,verbose=False):
         if verbose:
             print("Lump length longer than 2 kilobytes (try sending money in smaller portions)")
         return False
+    check_lump=json.loads(double_quote(check_lump))
     gas=calculate_gas(check_lump)
     minimum=0.1
-    check_lump=json.loads(double_quote(check_lump))
     if check_lump["hash"]==sha256(str({"txs":check_lump["txs"],"inputs":check_lump["inputs"],"msg":check_lump["msg"]}).encode()).hexdigest() and alursa.verify(num_decode(check_lump["sign"]),check_lump["hash"],num_decode(check_lump["e"]),num_decode(check_lump["n"])):
         jlump=json.loads(double_quote(check_lump))
         all_txs=len(jlump["txs"])
         crt_txs=0
         tap=0
-        spenttap=0.0
+        going_tap=0
+        spenttap=0
         for x in jlump["inputs"]:
             block_id=json.loads(open(f"utxo/{x}").read())["block"]
             if block_id in total_longest:
                 tap+=ltz_round(utxo_value(x))
+        for x in jlump['txs']:
+            if x['to']==address(num_decode(jlump["n"])):
+                spenttap+=ltz_round(x["amount"])
+            else:
+                spenttap+=ltz_round(x["amount"])
+                going_tap+=ltz_round(x["amount"])
+            crt_txs+=1
         if ltz_round(gas)>0:
-            if ltz_round(tap)<ltz_round(minimum):
+            print(1)
+            if ltz_round(going_tap)<ltz_round(minimum):
+                print(2)
                 if verbose:
                     print("Not enough Gas.")
                 return False
-        for x in jlump['txs']:
-            spenttap+=ltz_round(x["amount"])
-            crt_txs+=1
+            else:
+                print(ltz_round(going_tap),ltz_round(minimum))
         if ltz_round(spenttap)==ltz_round(tap) and crt_txs==all_txs:
             return True
         else:
             if verbose:
-                print("TX's of this lump are not valid")
+                print("TX's of this lump are not valid",crt_txs,all_txs)
             return False
     else:
         if verbose:
@@ -196,8 +205,12 @@ def handle_lump_io(check_lump,block):
         (query2.remove("inputs",x))
     for x in check_lump["txs"]:
         gassed_amount=ltz_round(ltz_round((100-gas)/100)*ltz_round(x["amount"]))
-        (query2.append("inputs",(sha256(double_quote(str({x["to"]:gassed_amount,"block":block["hash"],"lump":check_lump["hash"]})).encode()).hexdigest()),{x["to"]:ltz_round(gassed_amount)}))
-        (query.add("utxo",sha256(double_quote(str({x["to"]:gassed_amount,"block":block["hash"],"lump":check_lump["hash"]})).encode()).hexdigest(),double_quote(str({x["to"]:ltz_round(gassed_amount),"block":block["hash"],"lump":check_lump["hash"]}))))
+        if x["to"]==address(num_decode(check_lump["n"])):
+            (query2.append("inputs",(sha256(double_quote(str({x["to"]:x["amount"],"block":block["hash"],"lump":check_lump["hash"]})).encode()).hexdigest()),{x["to"]:ltz_round(x["amount"])}))
+            (query.add("utxo",sha256(double_quote(str({x["to"]:x["amount"],"block":block["hash"],"lump":check_lump["hash"]})).encode()).hexdigest(),double_quote(str({x["to"]:ltz_round(x["amount"]),"block":block["hash"],"lump":check_lump["hash"]}))))
+        else:
+            (query2.append("inputs",(sha256(double_quote(str({x["to"]:ltz_round(gassed_amount),"block":block["hash"],"lump":check_lump["hash"]})).encode()).hexdigest()),{x["to"]:ltz_round(gassed_amount)}))
+            (query.add("utxo",sha256(double_quote(str({x["to"]:ltz_round(gassed_amount),"block":block["hash"],"lump":check_lump["hash"]})).encode()).hexdigest(),double_quote(str({x["to"]:ltz_round(gassed_amount),"block":block["hash"],"lump":check_lump["hash"]}))))
 
 
 def handle_block_io(block):
