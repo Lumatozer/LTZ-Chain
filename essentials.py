@@ -192,12 +192,12 @@ def handle_lump_io(check_lump,block):
     check_lump=json.loads(double_quote(check_lump))
     gas=calculate_gas(check_lump)
     for x in check_lump["inputs"]:
-        query.remove("utxo",x)
-        query2.remove("inputs",x)
+        (query.remove("utxo",x))
+        (query2.remove("inputs",x))
     for x in check_lump["txs"]:
         gassed_amount=ltz_round(ltz_round((100-gas)/100)*ltz_round(x["amount"]))
-        query2.append("inputs",(sha256(double_quote(str({x["to"]:gassed_amount,"block":block["hash"],"lump":check_lump["hash"]})).encode()).hexdigest()),{x["to"]:gassed_amount})
-        query.add("utxo",sha256(double_quote(str({x["to"]:gassed_amount,"block":block["hash"],"lump":check_lump["hash"]})).encode()).hexdigest(),double_quote(str({x["to"]:gassed_amount,"block":block["hash"],"lump":check_lump["hash"]})))
+        (query2.append("inputs",(sha256(double_quote(str({x["to"]:gassed_amount,"block":block["hash"],"lump":check_lump["hash"]})).encode()).hexdigest()),{x["to"]:gassed_amount}))
+        (query.add("utxo",sha256(double_quote(str({x["to"]:gassed_amount,"block":block["hash"],"lump":check_lump["hash"]})).encode()).hexdigest(),double_quote(str({x["to"]:gassed_amount,"block":block["hash"],"lump":check_lump["hash"]}))))
 
 
 def handle_block_io(block):

@@ -349,7 +349,7 @@ def send():
                 print("Peer added to list!")
                 if firstpeer==True:
                     firstpeer==False
-                    sync_client=next(iter(allc))
+                    sync_client=list(allc.keys())[0]
                     uid=uidgen()
                     if is_chain_empty():
                         lb=0
@@ -372,7 +372,7 @@ def send():
                 print("Peer added to list!")
                 if firstpeer==True:
                     firstpeer==False
-                    sync_client=next(iter(allc))
+                    sync_client=list(allc.keys())[0]
                     uid=uidgen()
                     if is_chain_empty():
                         lb=0
@@ -383,7 +383,7 @@ def send():
                     sync_client.send(msg.encode())
             
             elif raw_msg=="sync":
-                sync_client=next(iter(allc))
+                sync_client=list(allc.keys())[0]
                 uid=uidgen()
                 if is_chain_empty():
                     lb=0
