@@ -375,7 +375,7 @@ def verify_block(block):
                 nonce=cc_block["nonce"]
                 del cc_block["nonce"]
                 base={"checksum":sha256(double_quote(cc_block).encode()).hexdigest(),"nonce":nonce}
-                if sha256(double_quote(base).encode()).hexdigest()==block_hash and block_hash[0:5]=="00000":
+                if sha256(double_quote(base).encode()).hexdigest()==block_hash and block_hash[0:6]=="000000":
                     return True
             else:
                 return False
@@ -386,7 +386,7 @@ def verify_block(block):
             nonce=cc_block["nonce"]
             del cc_block["nonce"]
             base={"checksum":sha256(double_quote(cc_block).encode()).hexdigest(),"nonce":nonce}
-            if sha256(double_quote(base).encode()).hexdigest()==block_hash and block_hash[0:5]=="00000":
+            if sha256(double_quote(base).encode()).hexdigest()==block_hash and block_hash[0:6]=="000000":
                 return True   
     return False
 
