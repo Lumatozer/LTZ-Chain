@@ -196,8 +196,8 @@ def handle_lump_io(check_lump,block):
         (query2.remove("inputs",x))
     for x in check_lump["txs"]:
         gassed_amount=ltz_round(ltz_round((100-gas)/100)*ltz_round(x["amount"]))
-        (query2.append("inputs",(sha256(double_quote(str({x["to"]:gassed_amount,"block":block["hash"],"lump":check_lump["hash"]})).encode()).hexdigest()),{x["to"]:gassed_amount}))
-        (query.add("utxo",sha256(double_quote(str({x["to"]:gassed_amount,"block":block["hash"],"lump":check_lump["hash"]})).encode()).hexdigest(),double_quote(str({x["to"]:gassed_amount,"block":block["hash"],"lump":check_lump["hash"]}))))
+        (query2.append("inputs",(sha256(double_quote(str({x["to"]:gassed_amount,"block":block["hash"],"lump":check_lump["hash"]})).encode()).hexdigest()),{x["to"]:ltz_round(gassed_amount)}))
+        (query.add("utxo",sha256(double_quote(str({x["to"]:gassed_amount,"block":block["hash"],"lump":check_lump["hash"]})).encode()).hexdigest(),double_quote(str({x["to"]:ltz_round(gassed_amount),"block":block["hash"],"lump":check_lump["hash"]}))))
 
 
 def handle_block_io(block):
