@@ -57,6 +57,7 @@ msg_used=[]
 in_sync={}
 true_lumps=[]
 true_contracts=[]
+miner_threads=False
 
 def remove_overlapping():
     global true_lumps
@@ -235,7 +236,7 @@ def client_handeler(client):
                         else:
                             if str(x[0])==str(data):
                                 start_sending=True
-                                sleep(0.2)
+                                sleep(0.1)
                                 with open(f"chain\\{x[1]}") as uwu:
                                     client.send((uwu.read()).encode())
                     sleep(0.3)
@@ -315,7 +316,8 @@ def base_mineempty():
         print(arrow_msg_gen("Miner Thread","Block Mined late."))
 
 def loop_mine():
-    while True:
+    global miner_threads
+    while miner_threads:
         try:
             base_mineempty()
         except:
@@ -325,7 +327,7 @@ def thread_loop_mine():
     threading.Thread(target=loop_mine).start()
 
 def send():
-    global relay_msg,firstpeer,sys_verbose,true_lumps,coinbase,used,allc,verbose
+    global relay_msg,firstpeer,sys_verbose,true_lumps,coinbase,used,allc,verbose,miner_threads
     while True:
         try:
             raw_msg=input("Node >> ")
@@ -468,10 +470,16 @@ def send():
                 print(f"Blockchain{' -> {'}\n Address : {check_addr}\n Balance : {balance(check_addr)} LTZ"+"\n}")
             
             elif raw_msg=="mine empty":
+                miner_threads=True
                 threading.Thread(target=base_mineempty).start()
             
             elif raw_msg=="mine loop":
+                miner_threads=True
                 thread_loop_mine()
+            
+            elif raw_msg=="kill miner threads":
+                miner_threads=False
+                print("Kill scheduled")
             
             elif raw_msg=="address" or raw_msg=="addr":
                 print(node_addr)
