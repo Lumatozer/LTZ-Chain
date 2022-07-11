@@ -247,7 +247,7 @@ def client_handeler(client):
                     bls=0
                     print(arrow_msg_gen("Sync Thread"," Syncing Initialized!"))
                     while True:
-                        uwu=client.recv(1048576).decode()
+                        uwu=client.recv(11485760).decode()
                         if uwu=="":
                             print("Disconnected while Syncing")
                             break
@@ -275,21 +275,23 @@ def client_handeler(client):
                             uwu=json.loads(uwu)
                             try:
                                 if verify_block(uwu):
-                                    print("Block Received!")
+                                    print("Block "+bls+" Received!")
                                     handle_block_io(uwu)
                                     bls+=1
                                 else:
                                     print(uwu)
-                                    print("invalid block received")
-                                    print("Syncer node sending inavlid blocks. Stopping Sync")
+                                    print("Invalid block received!")
+                                    print("Syncer node sending invalid blocks! Immediately Stopping Sync.")
                                     break
                             except:
                                 if sys_verbose:
                                     traceback.print_exc()
-                                print("Error during sync. Stopping sync.")
+                                print("Error occured during sync. Stopping sync.")
                 else:
-                    print(received_msg)
-                    print("Non-Forwardable Message Received!")
+                    if sys_verbose:
+                        print(received_msg)
+                    if verbose:
+                        print("Non-Forwardable Message Received!")
         
         except:
             if sys_verbose:
@@ -499,7 +501,7 @@ def loop_mine_thread():
     global true_lumps
     import time
     while True:
-        time.sleep(0.1)
+        time.sleep(0.25)
         if len(true_lumps)!=0:
             remove_overlapping()
             cc_truelumps=true_lumps.copy()
