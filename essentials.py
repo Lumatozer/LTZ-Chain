@@ -1,9 +1,10 @@
 from hashlib import sha256
 import traceback
 from aludbms import query
-import json,alursa,os
+import json,alursa,os,time,datetime
 from branching import *
 from query2 import query2
+
 
 import string
 ALPHABET = string.ascii_uppercase + string.ascii_lowercase + \
@@ -12,8 +13,33 @@ ALPHABET_REVERSE = dict((c, i) for (i, c) in enumerate(ALPHABET))
 BASE = len(ALPHABET)
 SIGN_CHARACTER = '$'
 
+
 def ltz_round(num):
     return round(float(num),8)
+
+
+def unix_time():
+    ms = datetime.datetime.now()
+    return int(time.mktime(ms.timetuple()) * 1000)
+
+
+def padded_hex(i, l):
+    given_int = i
+    given_len = l+2
+    hex_result = hex(given_int)[2:]
+    num_hex_chars = len(hex_result)
+    extra_zeros = '0' * (given_len - num_hex_chars)
+    return ('0' + hex_result if num_hex_chars == given_len else
+            '?' * given_len if num_hex_chars > given_len else
+            '0' + extra_zeros + hex_result if num_hex_chars < given_len else
+            None)
+
+
+def redefine_target(last):
+    taken=15.27
+    tt=40
+    print(padded_hex(int(int(last,16)/(tt/taken)),5))
+
 
 def num_encode(n):
     if n < 0:
@@ -25,6 +51,7 @@ def num_encode(n):
         if n == 0: break
     return ''.join(reversed(s))
 
+
 def num_decode(s):
     if s[0] == SIGN_CHARACTER:
         return -num_decode(s[1:])
@@ -33,9 +60,11 @@ def num_decode(s):
         n = n * BASE + ALPHABET_REVERSE[c]
     return n
 
+
 def dict_keyval(dict):
     key_1=str(dict.keys()).replace("'","").replace('"',"")[11:-2]
     return key_1,dict[key_1]
+
 
 def make_error(msg):
     base="\n"+"#"*(len(msg)+4)+"\n"
@@ -219,6 +248,7 @@ def handle_block_io(block):
     utxo={block["miner"]:reward,"block":block["hash"]}
     query.add("utxo",sha256(double_quote(utxo).encode()).hexdigest(),double_quote(utxo))
     query2.append("inputs",sha256(double_quote(utxo).encode()).hexdigest(),{block["miner"]:reward})
+    query2.append("timestamps",block["hash"],int(str(block["timestamp"])[:-3]))
     for x in block["txlump"]:
         handle_lump_io(x,block)
 
@@ -266,27 +296,14 @@ def msg_mine(msg):
 
 def mine(trans,pkey,coinbase: str):
     print(arrow_msg_gen("Miner Thread","Mining Started!"))
-    if trans["txlump"]!=[] or trans["txlump"]!="":
-        if check_all_lumps(trans):
-            trans["coinbase"]=coinbase
-            trans["miner"]=pkey
-            base={"checksum":sha256(double_quote(trans).encode()).hexdigest(),"nonce":0}
-            while sha256(double_quote(base).encode()).hexdigest()[0:6]!="000000":
-                base["nonce"]+=1    
-            trans["hash"]=sha256(double_quote(base).encode()).hexdigest()
-            trans["nonce"]=base["nonce"]
-            return trans
-        else:
-            return False
-    else:
-        trans["coinbase"]=coinbase
-        trans["miner"]=pkey
-        base={"checksum":sha256(double_quote(trans).encode()).hexdigest(),"nonce":0}
-        while sha256(double_quote(base).encode()).hexdigest()[0:6]!="000000":
-            base["nonce"]+=1    
-        trans["hash"]=sha256(double_quote(base).encode()).hexdigest()
-        trans["nonce"]=base["nonce"]
-        return trans
+    trans["coinbase"]=coinbase
+    trans["miner"]=pkey
+    base={"checksum":sha256(double_quote(trans).encode()).hexdigest(),"nonce":0}
+    while sha256(double_quote(base).encode()).hexdigest()>"000000e4":
+        base["nonce"]+=1    
+    trans["hash"]=sha256(double_quote(base).encode()).hexdigest()
+    trans["nonce"]=base["nonce"]
+    return trans
 
 
 def address(n):
@@ -362,8 +379,10 @@ def workout_lump(topay,whom,d,e,n,msg=""):
         return lump([a,b],d,e,n,inputs,msg)
 
 
-def tx_base(tx_lump=[]):
-    return {"txlump":tx_lump,"prev":get_building_hash(),"contracts":[],"others":[]}
+def tx_base(tx_lump=[],is_genesis=False):
+    if is_genesis:
+        return {"txlump":tx_lump,"prev":0,"contracts":[],"timestamp":unix_time()}
+    return {"txlump":tx_lump,"prev":get_building_hash(),"contracts":[],"timestamp":unix_time()}
 
 
 def verify_block(block):
