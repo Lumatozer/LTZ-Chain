@@ -86,6 +86,10 @@ To mine an empty block:
 ```bash
 Node >> mine empty
 ```
+To mine empty blocks infinitely:
+```bash
+Node >> mine loop
+```
 To check balance:
 ```bash
 Node >> balance
