@@ -210,8 +210,6 @@ def verify_lump(check_lump,total_longest,verbose=False):
                 if verbose:
                     print("Not enough Gas.")
                 return False
-            else:
-                print(ltz_round(going_tap),ltz_round(minimum))
         if ltz_round(spenttap)==ltz_round(tap) and crt_txs==all_txs:
             return True
         else:
