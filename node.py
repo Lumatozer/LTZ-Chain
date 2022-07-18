@@ -246,6 +246,7 @@ def client_handeler(client):
                 
                 elif msg_filter(received_msg, "type")=="sending_sync":
                     bls=0
+                    last=get_building_hash()
                     print(arrow_msg_gen("Sync Thread"," Syncing Initialized!"))
                     while True:
                         uwu=client.recv(11485760).decode()
@@ -275,14 +276,16 @@ def client_handeler(client):
                         elif is_set(uwu):
                             uwu=json.loads(uwu)
                             try:
-                                if verify_block(uwu):
+                                if verify_block(uwu) and uwu["prev"]==last:
                                     print("Block "+bls+" Received!")
                                     handle_block_io(uwu)
                                     bls+=1
+                                    last=uwu["hash"]
                                 else:
-                                    print(uwu)
+                                    if sys_verbose:
+                                        print(uwu)
                                     print("Invalid block received!")
-                                    print("Syncer node sending invalid blocks! Immediately Stopping Sync.")
+                                    print("Syncer node sending invalid block series! Immediately Stopping Sync.")
                                     break
                             except:
                                 if sys_verbose:

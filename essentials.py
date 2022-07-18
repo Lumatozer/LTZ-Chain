@@ -298,7 +298,7 @@ def mine(trans,pkey,coinbase: str):
     trans["miner"]=pkey
     base={"checksum":sha256(double_quote(trans).encode()).hexdigest(),"nonce":0}
     while sha256(double_quote(base).encode()).hexdigest()[0:6]!="000000":
-        base["nonce"]+=1    
+        base["nonce"]+=1
     trans["hash"]=sha256(double_quote(base).encode()).hexdigest()
     trans["nonce"]=base["nonce"]
     return trans
