@@ -29,7 +29,7 @@ def load_settings():
         with open("bin/settings.json") as fw:
             settings=json.loads(fw.read())
     except:
-        raise Exception("No settings.json file found!")
+        raise Exception("No settings.json file found in bin folder!")
 
 load_settings()
 relay_msg=settings["msg"]
