@@ -466,15 +466,6 @@ def send():
                 check_addr=input("Enter Address : ").replace(" ","")
                 print(f"Blockchain{' -> {'}\n Address : {check_addr}\n Balance : {balance(check_addr)} LTZ"+"\n}")
             
-            
-            elif raw_msg=="mine":
-                if miner_threads==False:
-                    print("Empty mining initiated")
-                    miner_threads=True
-                elif miner_threads:
-                    print("Empty mining halted")
-                    miner_threads=False
-            
             elif raw_msg=="kill miner thread":
                 miner_threads=False
                 print("Kill scheduled")
@@ -504,7 +495,7 @@ def send():
                 traceback.print_exc()
 
 def loop_mine_thread():
-    global true_lumps
+    global true_lumps,miner_threads
     import time
     while True:
         time.sleep(0.25)
