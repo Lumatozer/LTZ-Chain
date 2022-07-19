@@ -318,16 +318,6 @@ def base_mineempty():
     else:
         print(arrow_msg_gen("Miner Thread","Block Mined late."))
 
-def loop_mine():
-    global miner_threads
-    while miner_threads:
-        try:
-            base_mineempty()
-        except:
-            continue
-
-def thread_loop_mine():
-    threading.Thread(target=loop_mine).start()
 
 def send():
     global relay_msg,firstpeer,sys_verbose,true_lumps,coinbase,used,allc,verbose,miner_threads
@@ -472,15 +462,11 @@ def send():
                 check_addr=input("Enter Address : ").replace(" ","")
                 print(f"Blockchain{' -> {'}\n Address : {check_addr}\n Balance : {balance(check_addr)} LTZ"+"\n}")
             
-            elif raw_msg=="mine empty":
-                miner_threads=True
-                threading.Thread(target=base_mineempty).start()
             
-            elif raw_msg=="mine loop":
+            elif raw_msg=="mine":
                 miner_threads=True
-                thread_loop_mine()
             
-            elif raw_msg=="kill miner threads":
+            elif raw_msg=="kill miner thread":
                 miner_threads=False
                 print("Kill scheduled")
             
@@ -528,6 +514,11 @@ def loop_mine_thread():
                 broadcast(double_quote(block),"block")
             else:
                 print(arrow_msg_gen("Miner Thread","Block Mined late."))
+        elif miner_threads:
+            try:
+                base_mineempty()
+            except:
+                continue
 
 
 t2=threading.Thread(target=send)
