@@ -82,13 +82,9 @@ To set coinbase:
 ```bash
 Node >> coinbase
 ```
-To mine an empty block:
+To allow or restrict the mining of empty blocks in absence of transactions:
 ```bash
-Node >> mine empty
-```
-To mine empty blocks infinitely:
-```bash
-Node >> mine loop
+Node >> mine
 ```
 To check balance:
 ```bash

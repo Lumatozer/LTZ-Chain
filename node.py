@@ -37,6 +37,7 @@ firstpeer=True
 initial_sync=True
 verbose=settings["verbose"]
 sys_verbose=settings["sys verbose"]
+miner_threads=settings["empty_mines"]
 coinbase=settings["coinbase"]
 print(logovar)
 import socket, threading, random,traceback,sys,hash_test
@@ -57,7 +58,7 @@ msg_used=[]
 in_sync={}
 true_lumps=[]
 true_contracts=[]
-miner_threads=False
+
 
 def remove_overlapping():
     global true_lumps
@@ -407,7 +408,7 @@ def send():
             
             elif raw_msg=="save settings":
                 with open("bin/settings.json","w+") as fw:
-                    fw.write(json.dumps({"verbose":verbose,"sys verbose":sys_verbose,"msg":relay_msg,"coinbase":coinbase}))
+                    fw.write(json.dumps({"verbose":verbose,"sys verbose":sys_verbose,"msg":relay_msg,"coinbase":coinbase,"empty_mines":miner_threads}))
 
             elif raw_msg=="hashrate":
                 hash_test.rate_check()
@@ -464,7 +465,12 @@ def send():
             
             
             elif raw_msg=="mine":
-                miner_threads=True
+                if miner_threads==False:
+                    print("Empty mining initiated")
+                    miner_threads=True
+                elif miner_threads:
+                    print("Empty mining halted")
+                    miner_threads=False
             
             elif raw_msg=="kill miner thread":
                 miner_threads=False
