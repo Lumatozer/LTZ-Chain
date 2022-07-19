@@ -3,7 +3,7 @@ def dict_keyval(dict):
     key_1=str(dict.keys()).replace("'","").replace('"',"")[11:-2]
     return key_1,dict[key_1]
 def get(dbname,key):
-    dbname=dbname+".aludb"
+    dbname="bin/"+dbname+".aludb"
     with open(dbname) as fw:
         fr=fw.read()
         db_file=json.loads(str(fr))
@@ -12,7 +12,7 @@ def get(dbname,key):
             return dict_keyval(dict_keyval(x)[1])[1]
 
 def key_exists(dbname,key):
-    dbname=dbname+".aludb"
+    dbname="bin/"+dbname+".aludb"
     with open(dbname) as fw:
         file=json.loads(fw.read())
     for x in file:
@@ -22,7 +22,7 @@ def key_exists(dbname,key):
 
 def append(dbname,key,val):
     if not key_exists(dbname,key):
-        dbname=dbname+".aludb"
+        dbname="bin/"+dbname+".aludb"
         with open(dbname) as fw:
             file=json.loads(fw.read().replace("'",'"'))
         file.append({key:val})
@@ -30,7 +30,7 @@ def append(dbname,key,val):
             fw.write(str(file).replace("'",'"'))
             return True
     elif key_exists(dbname,key):
-        dbname=dbname+".aludb"
+        dbname="bin/"+dbname+".aludb"
         with open(dbname) as fw:
             file=json.loads(fw.read().replace("'",'"'))
         for x in file:
@@ -40,15 +40,24 @@ def append(dbname,key,val):
                     fw.write(str(file).replace("'",'"'))
                 return True
 
+def custom_append(dbname,val):
+    dbname="bin/"+dbname+".aludb"
+    with open(dbname) as fw:
+        file=json.loads(fw.read())
+    file.append(val)
+    with open(dbname,'w+') as fw:
+        fw.write(str(file))
+        return True
+
 def givedb(dbname):
-    dbname=dbname+".aludb"
+    dbname="bin/"+dbname+".aludb"
     with open(dbname) as fw:
         file=json.loads(fw.read().replace("'",'"'))
         return file
 
 def remove(dbname,key):
     if key_exists(dbname,key):
-        dbname=dbname+".aludb"
+        dbname="bin/"+dbname+".aludb"
         with open(dbname) as fw:
             file=json.loads(fw.read().replace("'",'"'))
         for x in file:

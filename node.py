@@ -26,7 +26,7 @@ import json
 def load_settings():
     global settings
     try:
-        with open("settings.json") as fw:
+        with open("bin/settings.json") as fw:
             settings=json.loads(fw.read())
     except:
         raise Exception("No settings.json file found!")
@@ -209,7 +209,7 @@ def client_handeler(client):
                                 if x in true_lumps:
                                     true_lumps.remove(x)
                             block_json=json.loads(double_quote(data))
-                            print(f"Block: hash: {block_json['hash']} miner: {block_json['miner']} coinbase: {block_json['coinbase']}")
+                            print(f"Block: hash: {block_json['hash']} height: {block_json['height']} miner: {block_json['miner']} nonce: {block_json['nonce']} coinbase: {block_json['coinbase']}")
                             handle_block_io(double_quote(data))
                         else:
                             print("False Block")
@@ -416,7 +416,7 @@ def send():
                     relay_msg=False
             
             elif raw_msg=="save settings":
-                with open("settings.json","w+") as fw:
+                with open("bin/settings.json","w+") as fw:
                     fw.write(json.dumps({"verbose":verbose,"sys verbose":sys_verbose,"msg":relay_msg,"coinbase":coinbase}))
 
             elif raw_msg=="hashrate":

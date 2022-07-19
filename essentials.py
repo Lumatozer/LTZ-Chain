@@ -20,25 +20,21 @@ def ltz_round(num):
 
 def unix_time():
     ms = datetime.datetime.now()
-    return int(time.mktime(ms.timetuple()) * 1000)
+    return int(time.mktime(ms.timetuple()))
 
 
-def padded_hex(i, l):
-    given_int = i
-    given_len = l+2
-    hex_result = hex(given_int)[2:]
-    num_hex_chars = len(hex_result)
-    extra_zeros = '0' * (given_len - num_hex_chars)
-    return ('0' + hex_result if num_hex_chars == given_len else
-            '?' * given_len if num_hex_chars > given_len else
-            '0' + extra_zeros + hex_result if num_hex_chars < given_len else
-            None)
+def padded_hex(hex_str, pads):
+    return hex(hex_str)[2:].zfill(pads)
 
 
-def redefine_target(last):
-    taken=15.27
-    tt=40
-    print(padded_hex(int(int(last,16)/(tt/taken)),5))
+def redefine_target(last,time_taken: int,to_take: int):
+    this_int=int(last,16)
+    new_factor=this_int/(to_take/time_taken)
+    if new_factor>this_int*2:
+        return padded_hex(round(this_int*2),13)
+    if new_factor<this_int/2:
+        return padded_hex(round(this_int/2),13)
+    return padded_hex(round(new_factor),13)
 
 
 def num_encode(n):
@@ -172,10 +168,9 @@ class lump:
         self.msg=msg
         self.n=num_encode(n)
         self.e=num_encode(e)
-        self.hash=sha256(str({"txs":self.txs,"inputs":self.inputs,"msg":self.msg}).encode()).hexdigest()
-        self.sign=num_encode(int(alursa.signature(self.hash,d,n)))
+        self.sign=num_encode(int(alursa.signature(sha256(str({"txs":self.txs,"inputs":self.inputs,"msg":self.msg}).encode()).hexdigest(),d,n)))
     def __repr__(self):
-        return str({"txs":self.txs,"inputs":self.inputs,"msg":self.msg,"hash":self.hash,"e":self.e,"n":self.n,"sign":self.sign})
+        return str({"txs":self.txs,"inputs":self.inputs,"msg":self.msg,"e":self.e,"n":self.n,"sign":self.sign})
 
 def verify_lump(check_lump,total_longest,verbose=False):
     if len(str(check_lump))<=1536 and len(str(json.loads(double_quote(check_lump))["msg"]))<=512:
@@ -187,7 +182,7 @@ def verify_lump(check_lump,total_longest,verbose=False):
     check_lump=json.loads(double_quote(check_lump))
     gas=calculate_gas(check_lump)
     minimum=0.1
-    if check_lump["hash"]==sha256(str({"txs":check_lump["txs"],"inputs":check_lump["inputs"],"msg":check_lump["msg"]}).encode()).hexdigest() and alursa.verify(num_decode(check_lump["sign"]),check_lump["hash"],num_decode(check_lump["e"]),num_decode(check_lump["n"])):
+    if alursa.verify(num_decode(check_lump["sign"]),sha256(str({"txs":check_lump["txs"],"inputs":check_lump["inputs"],"msg":check_lump["msg"]}).encode()).hexdigest(),num_decode(check_lump["e"]),num_decode(check_lump["n"])):
         jlump=json.loads(double_quote(check_lump))
         all_txs=len(jlump["txs"])
         crt_txs=0
@@ -246,7 +241,7 @@ def handle_block_io(block):
     utxo={block["miner"]:reward,"block":block["hash"]}
     query.add("utxo",sha256(double_quote(utxo).encode()).hexdigest(),double_quote(utxo))
     query2.append("inputs",sha256(double_quote(utxo).encode()).hexdigest(),{block["miner"]:reward})
-    query2.append("timestamps",block["hash"],int(str(block["timestamp"])[:-3]))
+    query2.custom_append("timestamps",block["timestamp"])
     for x in block["txlump"]:
         handle_lump_io(x,block)
 
@@ -292,12 +287,24 @@ def msg_mine(msg):
     return f"{msg} nonce={nonce} uid={uid}"
 
 
+def get_target():
+    timestamps=query2.givedb("timestamps")
+    if len(timestamps)<90:
+        return open("bin/target").read()
+    else:
+        taken=timestamps[len(timestamps)-1]-timestamps[0]
+        new_target=redefine_target(open("bin/target").read(),int(taken),3600)
+        open("bin/target","w+").write(new_target)
+        open("bin/timestamps.aludb","w+").write("[]")
+        return open("bin/target").read()
+
 def mine(trans,pkey,coinbase: str):
     print(arrow_msg_gen("Miner Thread","Mining Started!"))
+    target=get_target()
     trans["coinbase"]=coinbase
     trans["miner"]=pkey
     base={"checksum":sha256(double_quote(trans).encode()).hexdigest(),"nonce":0}
-    while sha256(double_quote(base).encode()).hexdigest()[0:6]!="000000":
+    while sha256(double_quote(base).encode()).hexdigest()>target:
         base["nonce"]+=1
     trans["hash"]=sha256(double_quote(base).encode()).hexdigest()
     trans["nonce"]=base["nonce"]
@@ -379,11 +386,13 @@ def workout_lump(topay,whom,d,e,n,msg=""):
 
 def tx_base(tx_lump=[],is_genesis=False):
     if is_genesis:
-        return {"txlump":tx_lump,"prev":0,"contracts":[],"timestamp":unix_time()}
-    return {"txlump":tx_lump,"prev":get_building_hash(),"contracts":[],"timestamp":unix_time()}
+        return {"height":1,"prev":0,"contracts":[],"timestamp":unix_time(),"txlump":tx_lump}
+    bhash=get_building_hash()
+    return {"height":json.loads(double_quote(open("chain/"+bhash).read()))["height"]+1,"prev":bhash,"contracts":[],"timestamp":unix_time(),"txlump":tx_lump}
 
 
 def verify_block(block):
+    target=get_target()
     if len(str(block))<=10485760:
         pass
     else:
@@ -402,7 +411,7 @@ def verify_block(block):
                 nonce=cc_block["nonce"]
                 del cc_block["nonce"]
                 base={"checksum":sha256(double_quote(cc_block).encode()).hexdigest(),"nonce":nonce}
-                if sha256(double_quote(base).encode()).hexdigest()==block_hash and block_hash[0:6]=="000000":
+                if sha256(double_quote(base).encode()).hexdigest()==block_hash and block_hash<=target and block["height"]-1==json.loads(double_quote(open("chain/"+block["prev"]).read()))["height"]:
                     return True
             else:
                 return False
@@ -413,7 +422,7 @@ def verify_block(block):
             nonce=cc_block["nonce"]
             del cc_block["nonce"]
             base={"checksum":sha256(double_quote(cc_block).encode()).hexdigest(),"nonce":nonce}
-            if sha256(double_quote(base).encode()).hexdigest()==block_hash and block_hash[0:6]=="000000":
+            if sha256(double_quote(base).encode()).hexdigest()==block_hash and block_hash<=target and block["height"]-1==0:
                 return True   
     return False
 
@@ -425,3 +434,6 @@ def msg_check(msg,uids):
             return False
     except:
         return False
+
+if __name__=="__main__":
+    print(get_target())

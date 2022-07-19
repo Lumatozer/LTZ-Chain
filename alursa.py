@@ -86,7 +86,7 @@ def verify(signature,hash,e,n):
 
 def load():
     try:
-        with open("den.alukeys") as f:
+        with open("bin/den.alukeys") as f:
             a=f.read()
             d=int(a.split(",")[0])
             e=int(a.split(",")[1])
@@ -96,7 +96,7 @@ def load():
         print("Generating 256-bit KeyPair for you.\nPlease be patient...")
         newkeyd,newkeye,newkeyn,addr=make_kp()
         print("KeyPair Generated!")
-        with open("den.alukeys",'a') as uwu:
+        with open("bin/den.alukeys",'a') as uwu:
             out=str(str(newkeyd)+","+str(newkeye)+","+str(newkeyn))
             uwu.write(out)
         return newkeyd,newkeye,newkeyn,addr
