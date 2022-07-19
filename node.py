@@ -356,7 +356,7 @@ def send():
             elif raw_msg=="default peer":
                 sc=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
                 try:
-                    sc.connect(("department-bucks.at.playit.gg",60622))
+                    sc.connect(("telebit.cloud",58562))
                 except:
                     print(f"ERROR : Unable to connect to default peer.")
                     continue
