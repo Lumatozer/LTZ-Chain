@@ -218,6 +218,7 @@ def verify_lump(check_lump,total_longest,verbose=False):
 
 
 def handle_lump_io(check_lump,block):
+    block=json.loads(double_quote(block))
     check_lump=json.loads(double_quote(check_lump))
     gas=calculate_gas(check_lump)
     for x in check_lump["inputs"]:

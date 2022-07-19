@@ -390,7 +390,7 @@ def send():
             elif raw_msg=="coinbase":
                 coinbase=input("Set custom coinbase value : ")
 
-            elif raw_msg=="network target":
+            elif raw_msg=="network target" or raw_msg=="target":
                 print(get_target())
             
             elif raw_msg=="sys verbose":
