@@ -82,8 +82,11 @@ To set coinbase:
 ```bash
 Node >> coinbase
 ```
-To restrict the mining of empty blocks in absence of transactions:\
-(action to be manually reverted back in the settings.json file)
+To permit the mining of empty blocks in absence of transactions:
+```bash
+Node >> mine
+```
+To restrict the mining of empty blocks in absence of transactions:
 ```bash
 Node >> kill miner thread
 ```

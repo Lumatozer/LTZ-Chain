@@ -37,7 +37,7 @@ firstpeer=True
 initial_sync=True
 verbose=settings["verbose"]
 sys_verbose=settings["sys verbose"]
-miner_threads=settings["empty_mines"]
+miner_threads=False
 coinbase=settings["coinbase"]
 print(logovar)
 import socket, threading, random,traceback,sys,hash_test
@@ -411,7 +411,7 @@ def send():
             
             elif raw_msg=="save settings":
                 with open("bin/settings.json","w+") as fw:
-                    fw.write(json.dumps({"verbose":verbose,"sys verbose":sys_verbose,"msg":relay_msg,"coinbase":coinbase,"empty_mines":miner_threads}))
+                    fw.write(json.dumps({"verbose":verbose,"sys verbose":sys_verbose,"msg":relay_msg,"coinbase":coinbase}))
 
             elif raw_msg=="hashrate":
                 hash_test.rate_check()
@@ -466,6 +466,10 @@ def send():
                 check_addr=input("Enter Address : ").replace(" ","")
                 print(f"Blockchain{' -> {'}\n Address : {check_addr}\n Balance : {balance(check_addr)} LTZ"+"\n}")
             
+            elif raw_msg=="mine":
+                miner_threads=True
+                print("Initiaing mining of empty blocks...")
+
             elif raw_msg=="kill miner thread":
                 miner_threads=False
                 print("Kill scheduled")
