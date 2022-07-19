@@ -217,8 +217,7 @@ def verify_lump(check_lump,total_longest,verbose=False):
         return False
 
 
-def handle_lump_io(check_lump,block):
-    block=json.loads(double_quote(block))
+def handle_lump_io(check_lump,block_hash):
     check_lump=json.loads(double_quote(check_lump))
     gas=calculate_gas(check_lump)
     for x in check_lump["inputs"]:
@@ -226,12 +225,13 @@ def handle_lump_io(check_lump,block):
         (query2.remove("inputs",x))
     for x in check_lump["txs"]:
         gassed_amount=ltz_round(ltz_round((100-gas)/100)*ltz_round(x["amount"]))
+        lump_hash=sha256(str({"txs":check_lump["txs"],"inputs":check_lump["inputs"],"msg":check_lump["msg"]}).encode()).hexdigest()
         if x["to"]==address(num_decode(check_lump["n"])):
-            (query2.append("inputs",(sha256(double_quote(str({x["to"]:x["amount"],"block":block["hash"],"lump":check_lump["hash"]})).encode()).hexdigest()),{x["to"]:ltz_round(x["amount"])}))
-            (query.add("utxo",sha256(double_quote(str({x["to"]:x["amount"],"block":block["hash"],"lump":check_lump["hash"]})).encode()).hexdigest(),double_quote(str({x["to"]:ltz_round(x["amount"]),"block":block["hash"],"lump":check_lump["hash"]}))))
+            (query2.append("inputs",(sha256(double_quote(str({x["to"]:x["amount"],"block":block_hash,"lump":lump_hash})).encode()).hexdigest()),{x["to"]:ltz_round(x["amount"])}))
+            (query.add("utxo",sha256(double_quote(str({x["to"]:x["amount"],"block":block_hash,"lump":lump_hash})).encode()).hexdigest(),double_quote(str({x["to"]:ltz_round(x["amount"]),"block":block_hash,"lump":lump_hash}))))
         else:
-            (query2.append("inputs",(sha256(double_quote(str({x["to"]:ltz_round(gassed_amount),"block":block["hash"],"lump":check_lump["hash"]})).encode()).hexdigest()),{x["to"]:ltz_round(gassed_amount)}))
-            (query.add("utxo",sha256(double_quote(str({x["to"]:ltz_round(gassed_amount),"block":block["hash"],"lump":check_lump["hash"]})).encode()).hexdigest(),double_quote(str({x["to"]:ltz_round(gassed_amount),"block":block["hash"],"lump":check_lump["hash"]}))))
+            (query2.append("inputs",(sha256(double_quote(str({x["to"]:ltz_round(gassed_amount),"block":block_hash,"lump":lump_hash})).encode()).hexdigest()),{x["to"]:ltz_round(gassed_amount)}))
+            (query.add("utxo",sha256(double_quote(str({x["to"]:ltz_round(gassed_amount),"block":block_hash,"lump":lump_hash})).encode()).hexdigest(),double_quote(str({x["to"]:ltz_round(gassed_amount),"block":block_hash,"lump":lump_hash}))))
 
 
 def handle_block_io(block):
@@ -244,7 +244,7 @@ def handle_block_io(block):
     query2.append("inputs",sha256(double_quote(utxo).encode()).hexdigest(),{block["miner"]:reward})
     query2.custom_append("timestamps",block["timestamp"])
     for x in block["txlump"]:
-        handle_lump_io(x,block)
+        handle_lump_io(x,block["hash"])
 
 
 def check_all_lumps(trans):
