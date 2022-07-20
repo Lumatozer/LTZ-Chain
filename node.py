@@ -280,7 +280,7 @@ def client_handeler(client):
                             uwu=json.loads(uwu)
                             try:
                                 if verify_block(uwu) and uwu["prev"]==last:
-                                    print("Block "+bls+" Received!")
+                                    print(f"Block {bls} Received!")
                                     handle_block_io(uwu)
                                     bls+=1
                                     last=uwu["hash"]
@@ -288,7 +288,8 @@ def client_handeler(client):
                                     if sys_verbose:
                                         print(uwu)
                                     print("Invalid block received!")
-                                    print("Syncer node sending invalid block series! Immediately Stopping Sync.")
+                                    if uwu["prev"]!=last:
+                                        print("Syncer node sending invalid block series! Immediately Stopping Sync.")
                                     break
                             except:
                                 if sys_verbose:
