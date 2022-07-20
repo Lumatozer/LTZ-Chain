@@ -225,7 +225,8 @@ def client_handeler(client):
                     from time import sleep
                     print(arrow_msg_gen("Sync Thread"," A client requested sync\n Sending data"))
                     in_sync[client]=client
-                    longest_branch=get_longest(opposite=True)
+                    longest_branch=get_longest()
+                    longest_branch=arr_double_opp(longest_branch)
                     uid=uidgen()
                     msg=double_quote(msgen("sync",uid,"sending_sync"))
                     client.send(str(len(msg.encode())).encode())
@@ -234,7 +235,7 @@ def client_handeler(client):
                     for x in longest_branch:
                         if start_sending:
                             sleep(0.1)
-                            with open(f"chain\\{x[0]}") as uwu:
+                            with open(f"chain\\{x[1]}") as uwu:
                                 client.send((uwu.read()).encode())
                         else:
                             if str(x[0])==str(data):
@@ -280,10 +281,10 @@ def client_handeler(client):
                             uwu=json.loads(uwu)
                             try:
                                 if verify_block(uwu) and uwu["prev"]==last:
+                                    last=uwu["hash"]
                                     print(f"Block {bls} Received!")
                                     handle_block_io(uwu)
                                     bls+=1
-                                    last=uwu["hash"]
                                 else:
                                     if sys_verbose:
                                         print(uwu)

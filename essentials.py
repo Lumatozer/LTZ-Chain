@@ -13,6 +13,14 @@ ALPHABET_REVERSE = dict((c, i) for (i, c) in enumerate(ALPHABET))
 BASE = len(ALPHABET)
 SIGN_CHARACTER = '$'
 
+def arr_double_opp(chain: list):
+    chain.reverse()
+    new_chain=[]
+    for x in chain:
+        x.reverse()
+        new_chain.append(x)
+    return new_chain
+
 
 def ltz_round(num):
     return round(float(num),8)
