@@ -191,11 +191,13 @@ def client_handeler(client):
                             relay(received_msg.encode())
                         
                 elif msg_filter(received_msg, "type")=="lump":
+                    relay(received_msg.encode())
                     try:
                         if verify_lump(data,array_all_in_one(get_longest())) and json.loads(double_quote(data)) not in true_lumps and not_in_truelumps(data):
                             true_lumps.append(data)
-                            relay(received_msg.encode())
-                        elif verbose:
+                            if sys_verbose:
+                                print("TX received",len(true_lumps))
+                        elif sys_verbose:
                             print("An invalid lump was broadcasted.")
                     except:
                         if sys_verbose:
@@ -389,6 +391,9 @@ def send():
             
             elif raw_msg=="coinbase":
                 coinbase=input("Set custom coinbase value : ")
+            
+            elif raw_msg=="mem pool":
+                print(len(true_lumps))
 
             elif raw_msg=="network target" or raw_msg=="target":
                 print(get_target())
@@ -497,6 +502,7 @@ def send():
         except:
             if sys_verbose:
                 traceback.print_exc()
+
 
 def loop_mine_thread():
     global true_lumps,miner_threads

@@ -435,6 +435,3 @@ def msg_check(msg,uids):
             return False
     except:
         return False
-
-if __name__=="__main__":
-    print(get_target())
