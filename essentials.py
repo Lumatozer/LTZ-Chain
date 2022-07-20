@@ -303,6 +303,7 @@ def get_target():
     else:
         taken=timestamps[len(timestamps)-1]-timestamps[0]
         new_target=redefine_target(open("bin/target").read(),int(taken),3600)
+        print(f"New network target is {new_target}")
         open("bin/target","w+").write(new_target)
         open("bin/timestamps.aludb","w+").write("[]")
         return open("bin/target").read()
