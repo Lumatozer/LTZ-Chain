@@ -365,7 +365,6 @@ def generate_inputs(n,topay):
             using_now=[]
             for x in input_balances:
                 if in_val>=ltz_round(topay):
-                    print(using_now)
                     break
                 else:
                     in_val+=x
