@@ -11,7 +11,7 @@ def add(dbname,id,query):
     pathtofile=dbname+"\\"+str(id)
     file_exists = os.path.exists(pathtofile)
     if file_exists==False:
-        with open(pathtofile, 'x') as f:
+        with open(pathtofile, 'a') as f:
             f.write((query))
         return True
     else:
