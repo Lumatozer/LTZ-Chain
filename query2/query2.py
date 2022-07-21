@@ -4,10 +4,9 @@ def get_file_read(name):
         with open(name) as fw:
             fr=fw.read()
             if fr!="":
-                break
+                return fr
             else:
                 time.sleep(0.1)
-    return fr
 
 def dict_keyval(dict):
     key_1=str(dict.keys()).replace("'","").replace('"',"")[11:-2]
@@ -15,32 +14,32 @@ def dict_keyval(dict):
 def get(dbname,key):
     dbname="bin/"+dbname+".aludb"
     fr=get_file_read(dbname)
-    db_file=json.loads(str(fr))
+    db_file=json.loads(str(fr).replace("'",'"'))
     for x in db_file:
         if (((dict_keyval(x)[0]).replace('"',"")).replace("'",""))==key:
             return dict_keyval(dict_keyval(x)[1])[1]
 
 def key_exists(dbname,key):
     dbname="bin/"+dbname+".aludb"
-    file=get_file_read(dbname)
+    file=json.loads(get_file_read(dbname).replace("'",'"'))
     for x in file:
-        if str(x).replace("'",'"').split('{')[1].split(":")[0].replace('"',"")==key:
+        if dict_keyval(x)[0]==key:
             return True
     return False
 
 def append(dbname,key,val):
     if not key_exists(dbname,key):
         dbname="bin/"+dbname+".aludb"
-        file=get_file_read(dbname)
+        file=json.loads(get_file_read(dbname).replace("'",'"'))
         file.append({key:val})
         with open(dbname,'w+') as fw:
             fw.write(str(file).replace("'",'"'))
             return True
     elif key_exists(dbname,key):
         dbname="bin/"+dbname+".aludb"
-        file=get_file_read(dbname)
+        file=json.loads(get_file_read(dbname).replace("'",'"'))
         for x in file:
-            if str(x).replace("'",'"').split('{')[1].split(":")[0].replace('"',"")==key:
+            if dict_keyval(x)[0]==key:
                 file[file.index(x)]={key:val}
                 with open(dbname,'w+') as fw:
                     fw.write(str(file).replace("'",'"'))
@@ -48,7 +47,7 @@ def append(dbname,key,val):
 
 def custom_append(dbname,val):
     dbname="bin/"+dbname+".aludb"
-    file=get_file_read(dbname)
+    file=json.loads(get_file_read(dbname).replace("'",'"'))
     file.append(val)
     with open(dbname,'w+') as fw:
         fw.write(str(file))
@@ -64,7 +63,7 @@ def remove(dbname,key):
         dbname="bin/"+dbname+".aludb"
         file=json.loads(get_file_read(dbname).replace("'",'"'))
         for x in file:
-            if str(x).replace("'",'"').split('{')[1].split(":")[0].replace('"',"")==key:
+            if dict_keyval(x)[0]==key:
                 file.remove(json.loads(str(x).replace("'",'"')))
                 open(dbname,"w+").write(json.dumps(file))
                 return True
