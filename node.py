@@ -399,7 +399,7 @@ def send():
                 total_size=0
                 for x in true_lumps:
                     total_size+=len(str(x))
-                print(f"Size of Pool : {total_size}")
+                print(f"Size of Pool : {round(total_size/1024)} Kb")
 
             elif raw_msg=="network target" or raw_msg=="target":
                 print(get_target())
