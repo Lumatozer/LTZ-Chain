@@ -191,18 +191,18 @@ def client_handeler(client):
                             relay(received_msg.encode())
                         
                 elif msg_filter(received_msg, "type")=="lump":
-                    relay(received_msg.encode())
                     try:
                         if verify_lump(data,array_all_in_one(get_longest())) and json.loads(double_quote(data)) not in true_lumps and not_in_truelumps(data):
+                            relay(received_msg.encode())
                             true_lumps.append(data)
                             if sys_verbose:
-                                print("TX received",len(true_lumps))
+                                print("TX received")
                         elif sys_verbose:
                             print("An invalid lump was broadcasted.")
                     except:
                         if sys_verbose:
                             traceback.print_exc()
-                        print("Error verifying lump")
+                            print("Error verifying lump")
                 
                 elif msg_filter(received_msg, "type")=="block":
                     relay(received_msg.encode())
@@ -212,7 +212,7 @@ def client_handeler(client):
                                 if x in true_lumps:
                                     true_lumps.remove(x)
                             block_json=json.loads(double_quote(data))
-                            print(f"Block: hash: {block_json['hash']} height: {block_json['height']} miner: {block_json['miner']} nonce: {block_json['nonce']} coinbase: {block_json['coinbase']}")
+                            print(f"Block: hash: {block_json['hash']} height: {block_json['height']} TX's: {len(block_json['txlump'])} miner: {block_json['miner']} nonce: {block_json['nonce']} coinbase: {block_json['coinbase']}")
                             handle_block_io(double_quote(data))
                         else:
                             print("False Block")
@@ -517,7 +517,6 @@ def loop_mine_thread():
     while True:
         time.sleep(0.25)
         if len(true_lumps)!=0:
-            remove_overlapping()
             cc_truelumps=true_lumps.copy()
             if len(cc_truelumps)>=6485:
                 tx=tx_base(cc_truelumps[:6485])
