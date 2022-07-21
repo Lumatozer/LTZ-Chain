@@ -512,7 +512,6 @@ def send():
 
 
 def loop_mine_thread():
-    global true_lumps,miner_threads
     import time
     while True:
         time.sleep(0.25)
