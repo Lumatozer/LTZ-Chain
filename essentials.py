@@ -243,6 +243,7 @@ def handle_lump_io(check_lump,block_hash):
 
 
 def handle_block_io(block):
+    branch_save(block)
     reward=1
     block=json.loads(double_quote(block))
     query.add("chain",block["hash"],double_quote(block))

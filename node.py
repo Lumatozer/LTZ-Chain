@@ -395,7 +395,11 @@ def send():
                 coinbase=input("Set custom coinbase value : ")
             
             elif raw_msg=="mem pool":
-                print(len(true_lumps))
+                print(f"{len(true_lumps)} TX's in mempool")
+                total_size=0
+                for x in true_lumps:
+                    total_size+=len(str(x))
+                print(f"Size of Pool : {total_size}")
 
             elif raw_msg=="network target" or raw_msg=="target":
                 print(get_target())
@@ -419,6 +423,7 @@ def send():
             elif raw_msg=="save settings":
                 with open("bin/settings.json","w+") as fw:
                     fw.write(json.dumps({"verbose":verbose,"sys verbose":sys_verbose,"msg":relay_msg,"coinbase":coinbase}))
+                print("Changes saved!")
 
             elif raw_msg=="hashrate":
                 hash_test.rate_check()
@@ -515,7 +520,7 @@ def loop_mine_thread():
             remove_overlapping()
             cc_truelumps=true_lumps.copy()
             if len(cc_truelumps)>=6485:
-                tx=tx_base(cc_truelumps[0:6485])
+                tx=tx_base(cc_truelumps[:6485])
                 del cc_truelumps[:6485]
             else:
                 tx=tx_base(cc_truelumps)
