@@ -9,7 +9,7 @@ def dict_keyval(dict):
 def get_longest(opposite=False,manual=False):
     if not manual:
         while True:
-            with open("bin/cache/top.chain") as fw:
+            with open("bin/top.chain") as fw:
                 fr=fw.read()
             if fr!="":
                 break
@@ -104,7 +104,7 @@ def get_building_hash(manual=False):
         return get_longest(manual=True)[0][0]
     else:
         while True:
-            with open("bin/cache/top.chain") as fw:
+            with open("bin/top.chain") as fw:
                 fr=fw.read()
             if fr!="":
                 break
@@ -127,7 +127,7 @@ def is_chain_empty():
 
 def branch_save(block):
     while True:
-            with open("bin/cache/top.chain") as fw:
+            with open("bin/top.chain") as fw:
                 last_height=int(fw.read().split(",")[0].split("->")[1])
             if last_height!="":
                 break
@@ -138,12 +138,12 @@ def branch_save(block):
     if block["height"]>last_height:
         b_hash=block["hash"]
         b_height=block["height"]
-        with open("bin/cache/top.chain","w+") as fw:
+        with open("bin/top.chain","w+") as fw:
             fw.write(f"{b_hash}->{b_height}")
             fw.close()
     elif block["height"]==last_height:
         b_hash=block["hash"]
         b_height=block["height"]
-        with open("bin/cache/top.chain","a") as fw:
+        with open("bin/top.chain","a") as fw:
             fw.write(f",{b_hash}->{b_height}")
             fw.close()
