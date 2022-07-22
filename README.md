@@ -142,6 +142,10 @@ To issue TX with a contract:
 ```bash
 Node >> contract
 ```
+To view a contract:
+```bash
+Node >> view contract
+```
 Typing anything else except these commands will send it as a message to all nodes if messaging is enabled(default).
 # Others
 Keypairs are stored in the same directory as the node.pyc file as "den.alukeys".
