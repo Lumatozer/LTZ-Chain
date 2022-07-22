@@ -146,9 +146,9 @@ To view a contract:
 ```bash
 Node >> view contract
 ```
-Typing anything else except these commands will send it as a message to all nodes if messaging is enabled(default).
+Typing anything else except these commands will send it as a message to all nodes if messaging is enabled (default)
 # Others
-Keypairs are stored in the same directory as the node.pyc file as "den.alukeys".
+Keypairs are stored in the same directory as the node.pyc file as "den.alukeys"
 ### To change the keys.
 1. Replace the keypair file with a different keypair in the correct format.\
 OR
