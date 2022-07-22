@@ -239,7 +239,8 @@ def handle_lump_io(check_lump,block_hash):
             (query.add("utxo",sha256(double_quote(str({x["to"]:x["amount"],"block":block_hash,"lump":lump_hash})).encode()).hexdigest(),double_quote(str({x["to"]:ltz_round(x["amount"]),"block":block_hash,"lump":lump_hash}))))
         else:
             gassed_name=(sha256(double_quote(str({x["to"]:ltz_round(gassed_amount),"block":block_hash,"lump":lump_hash})).encode()).hexdigest())
-            (query2.contract_append({lump_hash:check_lump["msg"]}))
+            if check_lump["msg"]!="":
+                (query2.contract_append({lump_hash:check_lump["msg"]}))
             (query2.append("inputs",gassed_name,{x["to"]:ltz_round(gassed_amount)}))
             (query.add("utxo",gassed_name,double_quote(str({x["to"]:ltz_round(gassed_amount),"block":block_hash,"lump":lump_hash}))))
 
