@@ -470,6 +470,7 @@ def send():
                 elif verify_lump(tx_lump_result,array_all_in_one(get_longest()),verbose=True)==False:
                     print("Lump verification Failed")
                 else:
+                    tx_lump_result=json.loads(double_quote(tx_lump_result))
                     print(f'Contract hash : {sha256(str({"txs":tx_lump_result["txs"],"inputs":tx_lump_result["inputs"],"msg":tx_lump_result["msg"]}).encode()).hexdigest()}')
                     print("Broadcasted")
                     broadcast(tx_lump_result,type="lump")
@@ -506,14 +507,14 @@ def send():
                 print(json.dumps(get_longest(),indent=3))
             
             elif raw_msg=="view contract":
-                contract_name=input("Enter contract address : ")
+                contract_name=input("Enter contract address : ").replace(" ","")
                 contracts=givedb("contracts")
                 found=False
                 for x in contracts:
                     key_val=dict_keyval(x)
                     if key_val[0]==contract_name:
                         found=True
-                        print(key_val[1])
+                        print(f'###Contract Data###\n{key_val[1]}')
                 if found==False:
                     print("Could not find the given contract")
             
