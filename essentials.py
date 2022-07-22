@@ -238,8 +238,10 @@ def handle_lump_io(check_lump,block_hash):
             (query2.append("inputs",(sha256(double_quote(str({x["to"]:x["amount"],"block":block_hash,"lump":lump_hash})).encode()).hexdigest()),{x["to"]:ltz_round(x["amount"])}))
             (query.add("utxo",sha256(double_quote(str({x["to"]:x["amount"],"block":block_hash,"lump":lump_hash})).encode()).hexdigest(),double_quote(str({x["to"]:ltz_round(x["amount"]),"block":block_hash,"lump":lump_hash}))))
         else:
-            (query2.append("inputs",(sha256(double_quote(str({x["to"]:ltz_round(gassed_amount),"block":block_hash,"lump":lump_hash})).encode()).hexdigest()),{x["to"]:ltz_round(gassed_amount)}))
-            (query.add("utxo",sha256(double_quote(str({x["to"]:ltz_round(gassed_amount),"block":block_hash,"lump":lump_hash})).encode()).hexdigest(),double_quote(str({x["to"]:ltz_round(gassed_amount),"block":block_hash,"lump":lump_hash}))))
+            gassed_name=(sha256(double_quote(str({x["to"]:ltz_round(gassed_amount),"block":block_hash,"lump":lump_hash})).encode()).hexdigest())
+            (query2.contract_append({lump_hash:check_lump["msg"]}))
+            (query2.append("inputs",gassed_name,{x["to"]:ltz_round(gassed_amount)}))
+            (query.add("utxo",gassed_name,double_quote(str({x["to"]:ltz_round(gassed_amount),"block":block_hash,"lump":lump_hash}))))
 
 
 def handle_block_io(block):
@@ -409,6 +411,13 @@ def verify_block(block):
         return False
     block=json.loads(double_quote(block))
     if len(block["coinbase"])<=128 and len(block["miner"])<=64:
+        pass
+    else:
+        return False
+    last_prev=json.loads(double_quote(open("chain/"+get_building_hash()).read()))["prev"]
+    if last_prev==0:
+        pass
+    elif block["height"]>=json.loads(double_quote(open("chain/"+last_prev).read()))["height"]:
         pass
     else:
         return False

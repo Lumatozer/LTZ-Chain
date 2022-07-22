@@ -23,6 +23,8 @@ logovar="""""""""
 """""""""
 settings=None
 import json
+
+from query2.query2 import givedb
 def load_settings():
     global settings
     try:
@@ -468,8 +470,9 @@ def send():
                 elif verify_lump(tx_lump_result,array_all_in_one(get_longest()),verbose=True)==False:
                     print("Lump verification Failed")
                 else:
-                    broadcast(tx_lump_result,type="lump")
+                    print(f'Contract hash : {sha256(str({"txs":tx_lump_result["txs"],"inputs":tx_lump_result["inputs"],"msg":tx_lump_result["msg"]}).encode()).hexdigest()}')
                     print("Broadcasted")
+                    broadcast(tx_lump_result,type="lump")
             
             elif raw_msg=="balance" or raw_msg=="bal":
                 print(f"Blockchain ->  Address : {node_addr}\n Balance : {balance(node_addr)} LTZ")
@@ -501,6 +504,18 @@ def send():
             
             elif raw_msg=="longest branch":
                 print(json.dumps(get_longest(),indent=3))
+            
+            elif raw_msg=="view contract":
+                contract_name=input("Enter contract address : ")
+                contracts=givedb("contracts")
+                found=False
+                for x in contracts:
+                    key_val=dict_keyval(x)
+                    if key_val[0]==contract_name:
+                        found=True
+                        print(key_val[1])
+                if found==False:
+                    print("Could not find the given contract")
             
             else:
                 if relay_msg:

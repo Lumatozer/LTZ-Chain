@@ -53,9 +53,22 @@ def custom_append(dbname,val):
         fw.write(str(file))
         return True
 
+def contract_append(val):
+    dbname="bin/contracts.aludb"
+    with open(dbname,'a') as fw:
+        fw.write(str(val).replace("'",'"')+",")
+        return True
+
 def givedb(dbname):
     dbname="bin/"+dbname+".aludb"
-    file=json.loads(get_file_read(dbname).replace("'",'"'))
+    f=get_file_read(dbname)
+    if f[0]=="~":
+        f=f[1:]
+        f=f[:-1]
+        f="["+f+"]"
+        file=json.loads(f.replace("'",'"'))
+    else:
+        file=json.loads(f.replace("'",'"'))
     return file
 
 def remove(dbname,key):
