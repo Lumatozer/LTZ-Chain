@@ -514,7 +514,7 @@ def send():
                     key_val=dict_keyval(x)
                     if key_val[0]==contract_name:
                         found=True
-                        print(f'###Contract Data###\n{key_val[1]}')
+                        print(f'--- Contract Data ---\n{key_val[1]}')
                 if found==False:
                     print("Could not find the given contract")
             
