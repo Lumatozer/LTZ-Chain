@@ -33,17 +33,17 @@ World's first fully decentralized light-weight multi-purpose python based blockc
 5. Secure syncing and verification methods to prevent foul blocks from being generated or circulated around the network.
 6. **Low Requirements** for different blockchain based projects to run without needing a lot of computational power.
 7. Calculating branches with the most efficiency and very less disk and ram usage with the estimates of **max peak of A few hundred megabytes of ram usage at 1 million blocks**.
-8. Multiple lumps per block supported with a **max block size limit of 10 megabyte**(usually 4000 lumps ber block at max but any number allowed as long as it does not go above the block limit)
+8. Multiple lumps per block supported with a **max block size limit of 10 megabyte** (usually 4000 lumps ber block at max but any number allowed as long as it does not go above the block limit).
 9. Extra coinbase field in which block-miner can store text or link pointing at NFTS making sure they remain permanent and untampered on the blockchain.
 10. All types of issues like bazantine's generals problem or longest chain rule etc. have been implemented to make sure that there is no way to exploit the chain or tamper any data.
-11. **CPU based PoW mining** (subject to changes) and reward of 1 LTZ per block mined(mining empty blocks are also permitted on the network for a short time)
+11. **CPU based PoW mining** (subject to changes) and reward of 1 LTZ per block mined (mining empty blocks are also permitted on the network for a short time).
 12. Everything coded with least code possible without any functionality loss to speed-up CPU-based processing. You can also git clone .py files from the repo and alter those instead if you wish to but do not publish without giving credit.
 13. **No external dependencies have been used into making this project therefore eliminating the frustration of installing libraries.**
 14. People connected in the network can also send messages on the network which can be seen by everyone on the network replicating the behaviour of a p2p chat application at the same time cause why not? (although you can opt out and disable it)
 15. Messages are now also mined with a really small target averaging around 0.2 seconds per message on a dual core cpu. This has been done to prevent message spamming and DDoS Attacks.
 16. Added float LTZ exchanging for sending money in small bits till 8 decimals.
 17. Added 512 characters plain-text contracts for permanent storage on the blockchain.
-18. Gas fees calculated on the basis of how long of a contract has been written.(1% TX fees at max limit of 512 characters)
+18. Gas fees calculated on the basis of how long of a contract has been written (1% TX fees at max limit of 512 characters).
 
 Read more at https://aaravdayal.com/
 
