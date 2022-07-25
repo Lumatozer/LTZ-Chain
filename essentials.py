@@ -97,7 +97,7 @@ def tohex(msg):
 
 
 def utxo_person(key):
-    utxs=query2.givedb("inputs")
+    utxs=query2.givedb("utxos/LTZ")
     for x in utxs:
         if dict_keyval(x)[0]==key:
             return dict_keyval(dict_keyval(x)[1])[0]
@@ -124,7 +124,7 @@ def utxos(addr):
     longest_branch=get_longest()
     test_longest_branch=array_all_in_one(longest_branch)
     path="utxo"
-    inputs=query2.givedb("inputs")
+    inputs=query2.givedb("utxos/LTZ")
     for x in inputs:
         file=dict_keyval(x)[0]
         if dict_keyval(dict_keyval(x)[1])[0]==addr:
@@ -137,7 +137,7 @@ def utxos(addr):
 
 def balance(addr):
     paesa=0
-    inputs=query2.givedb("inputs")
+    inputs=query2.givedb("utxos/LTZ")
     utx=utxos(addr)
     for x in inputs:
         if dict_keyval(x)[0] in utx:
@@ -151,7 +151,7 @@ def key_hash(a,b):
     return sha256(f"{a}.{b}".encode()).hexdigest()
 
 def utxo_value(key):
-    return ltz_round(query2.get("inputs",key))
+    return ltz_round(query2.get("utxos/LTZ",key))
 
 def calculate_gas(check_lump):
     check_lump=json.loads(double_quote(check_lump))
@@ -176,9 +176,9 @@ class lump:
         self.msg=msg
         self.n=num_encode(n)
         self.e=num_encode(e)
-        self.sign=num_encode(int(alursa.signature(sha256(str({"txs":self.txs,"inputs":self.inputs,"msg":self.msg}).encode()).hexdigest(),d,n)))
+        self.sign=num_encode(int(alursa.signature(sha256(str({"txs":self.txs,"utxos/LTZ":self.inputs,"msg":self.msg}).encode()).hexdigest(),d,n)))
     def __repr__(self):
-        return str({"txs":self.txs,"inputs":self.inputs,"msg":self.msg,"e":self.e,"n":self.n,"sign":self.sign})
+        return str({"txs":self.txs,"utxos/LTZ":self.inputs,"msg":self.msg,"e":self.e,"n":self.n,"sign":self.sign})
 
 def verify_lump(check_lump,total_longest,verbose=False):
     if len(str(check_lump))<=1536 and len(str(json.loads(double_quote(check_lump))["msg"]))<=512:
@@ -190,14 +190,14 @@ def verify_lump(check_lump,total_longest,verbose=False):
     check_lump=json.loads(double_quote(check_lump))
     gas=calculate_gas(check_lump)
     minimum=0.1
-    if alursa.verify(num_decode(check_lump["sign"]),sha256(str({"txs":check_lump["txs"],"inputs":check_lump["inputs"],"msg":check_lump["msg"]}).encode()).hexdigest(),num_decode(check_lump["e"]),num_decode(check_lump["n"])):
+    if alursa.verify(num_decode(check_lump["sign"]),sha256(str({"txs":check_lump["txs"],"utxos/LTZ":check_lump["utxos/LTZ"],"msg":check_lump["msg"]}).encode()).hexdigest(),num_decode(check_lump["e"]),num_decode(check_lump["n"])):
         jlump=json.loads(double_quote(check_lump))
         all_txs=len(jlump["txs"])
         crt_txs=0
         tap=0
         going_tap=0
         spenttap=0
-        for x in jlump["inputs"]:
+        for x in jlump["utxos/LTZ"]:
             block_id=json.loads(open(f"utxo/{x}").read())["block"]
             if block_id in total_longest:
                 tap+=ltz_round(utxo_value(x))
@@ -228,20 +228,20 @@ def verify_lump(check_lump,total_longest,verbose=False):
 def handle_lump_io(check_lump,block_hash):
     check_lump=json.loads(double_quote(check_lump))
     gas=calculate_gas(check_lump)
-    for x in check_lump["inputs"]:
+    for x in check_lump["utxos/LTZ"]:
         (query.remove("utxo",x))
-        (query2.remove("inputs",x))
+        (query2.remove("utxos/LTZ",x))
     for x in check_lump["txs"]:
         gassed_amount=ltz_round(ltz_round((100-gas)/100)*ltz_round(x["amount"]))
-        lump_hash=sha256(str({"txs":check_lump["txs"],"inputs":check_lump["inputs"],"msg":check_lump["msg"]}).encode()).hexdigest()
+        lump_hash=sha256(str({"txs":check_lump["txs"],"utxos/LTZ":check_lump["utxos/LTZ"],"msg":check_lump["msg"]}).encode()).hexdigest()
         if x["to"]==address(num_decode(check_lump["n"])):
-            (query2.append("inputs",(sha256(double_quote(str({x["to"]:x["amount"],"block":block_hash,"lump":lump_hash})).encode()).hexdigest()),{x["to"]:ltz_round(x["amount"])}))
+            (query2.append("utxos/LTZ",(sha256(double_quote(str({x["to"]:x["amount"],"block":block_hash,"lump":lump_hash})).encode()).hexdigest()),{x["to"]:ltz_round(x["amount"])}))
             (query.add("utxo",sha256(double_quote(str({x["to"]:x["amount"],"block":block_hash,"lump":lump_hash})).encode()).hexdigest(),double_quote(str({x["to"]:ltz_round(x["amount"]),"block":block_hash,"lump":lump_hash}))))
         else:
             gassed_name=(sha256(double_quote(str({x["to"]:ltz_round(gassed_amount),"block":block_hash,"lump":lump_hash})).encode()).hexdigest())
             if check_lump["msg"]!="":
                 (query2.contract_append({lump_hash:check_lump["msg"]}))
-            (query2.append("inputs",gassed_name,{x["to"]:ltz_round(gassed_amount)}))
+            (query2.append("utxos/LTZ",gassed_name,{x["to"]:ltz_round(gassed_amount)}))
             (query.add("utxo",gassed_name,double_quote(str({x["to"]:ltz_round(gassed_amount),"block":block_hash,"lump":lump_hash}))))
 
 
@@ -253,7 +253,7 @@ def handle_block_io(block):
     query2.append("chain",block["hash"],block["prev"])
     utxo={block["miner"]:reward,"block":block["hash"]}
     query.add("utxo",sha256(double_quote(utxo).encode()).hexdigest(),double_quote(utxo))
-    query2.append("inputs",sha256(double_quote(utxo).encode()).hexdigest(),{block["miner"]:reward})
+    query2.append("utxos/LTZ",sha256(double_quote(utxo).encode()).hexdigest(),{block["miner"]:reward})
     query2.custom_append("timestamps",block["timestamp"])
     for x in block["txlump"]:
         handle_lump_io(x,block["hash"])
