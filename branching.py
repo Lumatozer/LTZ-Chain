@@ -1,5 +1,5 @@
 import json,time
-from query import query
+from query2 import query2
 def mer(msg):
     base="\n"+"#"*(len(msg)+4)+"\n"
     return "*Error*" + base + "| " + msg + " |"+ base
@@ -26,7 +26,7 @@ def get_longest(opposite=False,manual=False):
         mes=[]
         prevs=[]
         tops=[]
-        chain=query.givedb("chain")
+        chain=query2.givedb("chain")
         for x in chain:
             a,b=dict_keyval(x)
             mes.append(str(a))
@@ -48,7 +48,7 @@ def get_longest(opposite=False,manual=False):
         mes=[]
         prevs=[]
         tops=[]
-        chain=query.givedb("chain")
+        chain=query2.givedb("chain")
         for x in chain:
             a,b=dict_keyval(x)
             mes.append(str(a))

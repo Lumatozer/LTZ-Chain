@@ -1,4 +1,4 @@
-import json,time,shelve
+import json,time
 def get_file_read(name):
     while True:
         with open(name) as fw:
