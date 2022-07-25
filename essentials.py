@@ -3,7 +3,7 @@ import traceback
 from aludbms import query
 import json,alursa,os,time,datetime
 from branching import *
-from query2 import query2
+from query import query as query
 
 
 import string
@@ -97,7 +97,7 @@ def tohex(msg):
 
 
 def utxo_person(key):
-    utxs=query2.givedb("utxos/LTZ")
+    utxs=query.givedb("utxos/LTZ")
     for x in utxs:
         if dict_keyval(x)[0]==key:
             return dict_keyval(dict_keyval(x)[1])[0]
@@ -124,7 +124,7 @@ def utxos(addr):
     longest_branch=get_longest()
     test_longest_branch=array_all_in_one(longest_branch)
     path="utxo"
-    inputs=query2.givedb("utxos/LTZ")
+    inputs=query.givedb("utxos/LTZ")
     for x in inputs:
         file=dict_keyval(x)[0]
         if dict_keyval(dict_keyval(x)[1])[0]==addr:
@@ -137,7 +137,7 @@ def utxos(addr):
 
 def balance(addr):
     paesa=0
-    inputs=query2.givedb("utxos/LTZ")
+    inputs=query.givedb("utxos/LTZ")
     utx=utxos(addr)
     for x in inputs:
         if dict_keyval(x)[0] in utx:
@@ -151,7 +151,7 @@ def key_hash(a,b):
     return sha256(f"{a}.{b}".encode()).hexdigest()
 
 def utxo_value(key):
-    return ltz_round(query2.get("utxos/LTZ",key))
+    return ltz_round(query.get("utxos/LTZ",key))
 
 def calculate_gas(check_lump):
     check_lump=json.loads(double_quote(check_lump))
@@ -230,18 +230,18 @@ def handle_lump_io(check_lump,block_hash):
     gas=calculate_gas(check_lump)
     for x in check_lump["utxos/LTZ"]:
         (query.remove("utxo",x))
-        (query2.remove("utxos/LTZ",x))
+        (query.remove("utxos/LTZ",x))
     for x in check_lump["txs"]:
         gassed_amount=ltz_round(ltz_round((100-gas)/100)*ltz_round(x["amount"]))
         lump_hash=sha256(str({"txs":check_lump["txs"],"utxos/LTZ":check_lump["utxos/LTZ"],"msg":check_lump["msg"]}).encode()).hexdigest()
         if x["to"]==address(num_decode(check_lump["n"])):
-            (query2.append("utxos/LTZ",(sha256(double_quote(str({x["to"]:x["amount"],"block":block_hash,"lump":lump_hash})).encode()).hexdigest()),{x["to"]:ltz_round(x["amount"])}))
+            (query.append("utxos/LTZ",(sha256(double_quote(str({x["to"]:x["amount"],"block":block_hash,"lump":lump_hash})).encode()).hexdigest()),{x["to"]:ltz_round(x["amount"])}))
             (query.add("utxo",sha256(double_quote(str({x["to"]:x["amount"],"block":block_hash,"lump":lump_hash})).encode()).hexdigest(),double_quote(str({x["to"]:ltz_round(x["amount"]),"block":block_hash,"lump":lump_hash}))))
         else:
             gassed_name=(sha256(double_quote(str({x["to"]:ltz_round(gassed_amount),"block":block_hash,"lump":lump_hash})).encode()).hexdigest())
             if check_lump["msg"]!="":
-                (query2.contract_append({lump_hash:check_lump["msg"]}))
-            (query2.append("utxos/LTZ",gassed_name,{x["to"]:ltz_round(gassed_amount)}))
+                (query.contract_append({lump_hash:check_lump["msg"]}))
+            (query.append("utxos/LTZ",gassed_name,{x["to"]:ltz_round(gassed_amount)}))
             (query.add("utxo",gassed_name,double_quote(str({x["to"]:ltz_round(gassed_amount),"block":block_hash,"lump":lump_hash}))))
 
 
@@ -250,11 +250,11 @@ def handle_block_io(block):
     reward=1
     block=json.loads(double_quote(block))
     query.add("chain",block["hash"],double_quote(block))
-    query2.append("chain",block["hash"],block["prev"])
+    query.append("chain",block["hash"],block["prev"])
     utxo={block["miner"]:reward,"block":block["hash"]}
     query.add("utxo",sha256(double_quote(utxo).encode()).hexdigest(),double_quote(utxo))
-    query2.append("utxos/LTZ",sha256(double_quote(utxo).encode()).hexdigest(),{block["miner"]:reward})
-    query2.custom_append("timestamps",block["timestamp"])
+    query.append("utxos/LTZ",sha256(double_quote(utxo).encode()).hexdigest(),{block["miner"]:reward})
+    query.custom_append("timestamps",block["timestamp"])
     for x in block["txlump"]:
         handle_lump_io(x,block["hash"])
 
@@ -301,7 +301,7 @@ def msg_mine(msg):
 
 
 def get_target():
-    timestamps=query2.givedb("timestamps")
+    timestamps=query.givedb("timestamps")
     if len(timestamps)<90:
         return open("bin/target").read()
     else:

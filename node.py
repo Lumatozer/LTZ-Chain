@@ -24,7 +24,7 @@ logovar="""""""""
 settings=None
 import json
 
-from query2.query2 import givedb
+from query.query import givedb
 def load_settings():
     global settings
     try:
