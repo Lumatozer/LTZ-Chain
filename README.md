@@ -106,7 +106,7 @@ To connect to a default peer:
 ```bash
 Node >> default peer
 ```
-To see other accounts balances:
+To see other account's balances:
 ```bash
 Node >> see balance
 ```
@@ -122,7 +122,7 @@ To disable or enable sending messages:
 ```bash
 Node >> messaging
 ```
-To check hashrate:
+To check the hashrate of your node:
 ```bash
 Node >> hashrate
 ```
@@ -130,19 +130,19 @@ To save settings:
 ```bash
 Node >> save settings
 ```
-To see building block:
+To see the current building block:
 ```bash
 Node >> top block
 ```
-To preview longest chain:
+To preview the longest chain:
 ```bash
 Node >> longest branch
 ```
-To issue TX with a contract:
+To issue a TX with a contract:
 ```bash
 Node >> contract
 ```
-To view a contract:
+To view a published contract:
 ```bash
 Node >> view contract
 ```
