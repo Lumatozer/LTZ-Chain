@@ -152,9 +152,9 @@ Node >> create token
 ```
 Typing anything else except these commands will send it as a message to all nodes if messaging is enabled (default)
 # Others
-To create your own CryptoToken without using commands : \
-1. Issue a contract.\
-2. In the text field of the contract type _cmd_ token create {name_of_token} {total_supply}\
+To create your own CryptoToken without using commands :
+1. Issue a contract.
+2. In the text field of the contract type _cmd_ token create {name_of_token} {total_supply}
 3. Publish your contract and as soon as it is included in a block your currency will be established and recognized by the blockchain.\
 NOTE : The name of the token cannot be longer than 6 characters and should be in uppercase.
 ### To change the keys.
