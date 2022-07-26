@@ -1,4 +1,4 @@
-import json,time
+import json,time,os
 def get_file_read(name):
     while True:
         with open(name) as fw:
@@ -80,3 +80,23 @@ def remove(dbname,key):
                 file.remove(json.loads(str(x).replace("'",'"')))
                 open(dbname,"w+").write(json.dumps(file))
                 return True
+
+def utxo_add(addr,utxo,data,currency="LTZ"):
+    if os.path.exists(f"bin/utxos/{currency}/{addr}"):
+        fr=json.loads(get_file_read(f"bin/utxos/{currency}/{addr}"))
+        pass
+    else:
+        open(f"bin/utxos/{currency}/{addr}","a").close()
+        fr={"inputs":[]}
+    fr["inputs"].append(utxo)
+    with open(f"bin/utxos/{currency}/{addr}","w+") as fw:
+        fw.write(str(fr).replace("'",'"'))
+
+def utxo_remove(addr,utxo,currency="LTZ"):
+    fr=json.loads(get_file_read(f"bin/utxos/{currency}/{addr}"))
+    try:
+        fr["inputs"].remove(utxo)
+    except:
+        pass
+    with open(f"bin/utxos/{currency}/{addr}","w+") as fw:
+        fw.write(str(fr).replace("'",'"'))
