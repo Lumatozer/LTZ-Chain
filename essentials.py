@@ -487,7 +487,7 @@ def verify_block(block):
 
 def msg_check(msg,uids):
     try:
-        if sha256(msg.encode()).hexdigest()[0:4]=="0000" and msg.split("uid=")[1] not in uids and len(msg.split(" nonce=")[0])<=128:
+        if sha256(msg.encode()).hexdigest()[0:4]=="0000" and msg.split("uid=")[1] not in uids and len(msg.split(" nonce=")[0])<=128 and len(msg.split(" nonce=")[0])>0:
             return True
         else:
             return False
