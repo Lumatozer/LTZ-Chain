@@ -262,14 +262,11 @@ def handle_lump_io(check_lump,block_hash):
             utxo_name=sha256(double_quote(str({x["to"]:x["amount"],"currency":check_lump["currency"],"block":block_hash,"lump":lump_hash})).encode()).hexdigest()
             query2.utxo_add(x["to"],utxo_name,currency=check_lump["currency"])
             query.add("utxo",utxo_name,double_quote(str({x["to"]:ltz_round(x["amount"]),"currency":check_lump["currency"],"block":block_hash,"lump":lump_hash})))
-            print(utxo_name,"if made")
         else:
             gassed_name=(sha256(double_quote(str({x["to"]:ltz_round(gassed_amount),"currency":check_lump["currency"],"block":block_hash,"lump":lump_hash})).encode()).hexdigest())
             (query2.utxo_add(addr=x["to"],utxo=gassed_name,currency=check_lump["currency"]))
             query.add("utxo",gassed_name,double_quote(str({x["to"]:ltz_round(gassed_amount),"currency":check_lump["currency"],"block":block_hash,"lump":lump_hash})))
-            print(gassed_name,"else made")
     for x in check_lump["inputs"]:
-        print(x,"removed")
         (query.remove("utxo",x))
         query2.utxo_remove(address(num_decode(check_lump["n"])),x,currency=check_lump["currency"])
     if check_lump["msg"]!="":
