@@ -131,8 +131,8 @@ def utxos(addr,currency="LTZ"):
 
 
 def balance(addr,currency="LTZ"):
-    paesa=0
     inputs=utxos(addr,currency)
+    paesa=0
     for x in inputs:
         with open(str(f'utxo/{x}')) as of:
             j_file=json.loads(double_quote(of.read()))
