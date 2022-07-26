@@ -483,6 +483,9 @@ def send():
                 send_to=input("Contract Incentive Receiver : ").replace(" ","")
                 amount=0.1
                 token_name=input("Input ticker/name/symbol for your token : ")
+                if len(token_name)<1 or len(token_name)>6:
+                    print("Invalid name provided for creation of the token.")
+                    continue
                 total_supply=input("Enter the total supply for your token : ")
                 contract=f"_cmd_ token create {token_name} {float(total_supply)}"
                 tx_lump_result=workout_lump(ltz_round(amount),send_to,d,e,n,msg=contract)
