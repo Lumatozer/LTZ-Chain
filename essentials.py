@@ -1,3 +1,4 @@
+from ast import arg
 from hashlib import sha256
 import traceback
 from aludbms import query
@@ -12,6 +13,13 @@ string.digits + '-_'
 ALPHABET_REVERSE = dict((c, i) for (i, c) in enumerate(ALPHABET))
 BASE = len(ALPHABET)
 SIGN_CHARACTER = '$'
+
+def is_digit(check_str):
+    try:
+        float(check_str)
+        return True
+    except:
+        return False
 
 def arr_double_opp(chain: list):
     chain.reverse()
@@ -165,15 +173,29 @@ class tx:
 
 
 class lump:
-    def __init__(self,txs: list,d,e,n,inputs: list,msg="",) -> None:
+    def __init__(self,txs: list,d,e,n,inputs: list,msg="",currency="LTZ") -> None:
         self.txs=txs
         self.inputs=inputs
         self.msg=msg
+        self.currency=currency
         self.n=num_encode(n)
         self.e=num_encode(e)
-        self.sign=num_encode(int(alursa.signature(sha256(str({"txs":self.txs,"inputs":self.inputs,"msg":self.msg}).encode()).hexdigest(),d,n)))
+        self.sign=num_encode(int(alursa.signature(sha256(str({"txs":self.txs,"inputs":self.inputs,"msg":self.msg,"currency":currency}).encode()).hexdigest(),d,n)))
     def __repr__(self):
-        return str({"txs":self.txs,"inputs":self.inputs,"msg":self.msg,"e":self.e,"n":self.n,"sign":self.sign})
+        return str({"txs":self.txs,"inputs":self.inputs,"msg":self.msg,"currency":self.currency,"e":self.e,"n":self.n,"sign":self.sign})
+
+
+def smart_contract_verify(msg):
+    args=msg.split()
+    if len(args)!=0:
+        if args[0]=="_cmd_":
+            if args[1]=="token":
+                if args[2]=="create":
+                    if len(args[3])>0 and len(args[3])<7 and args[3]==args[3].upper() and os.path.exists(f"bin/utxos/{args[3]}")==False:
+                        if is_digit(args[4]):
+                            return True
+    return False
+
 
 def verify_lump(check_lump,total_longest,verbose=False):
     if len(str(check_lump))<=1536 and len(str(json.loads(double_quote(check_lump))["msg"]))<=512:
@@ -183,20 +205,29 @@ def verify_lump(check_lump,total_longest,verbose=False):
             print("Lump length longer than 2 kilobytes (try sending money in smaller portions)")
         return False
     check_lump=json.loads(double_quote(check_lump))
+    if len(check_lump["msg"].split())>3 and check_lump["msg"].split()[0]=="_cmd_":
+        if os.path.exists(f"bin/utxos/{check_lump['msg'].split()[3]}"):
+            return False
     gas=calculate_gas(check_lump)
     minimum=0.1
-    if alursa.verify(num_decode(check_lump["sign"]),sha256(str({"txs":check_lump["txs"],"inputs":check_lump["inputs"],"msg":check_lump["msg"]}).encode()).hexdigest(),num_decode(check_lump["e"]),num_decode(check_lump["n"])):
+    if alursa.verify(num_decode(check_lump["sign"]),sha256(str({"txs":check_lump["txs"],"inputs":check_lump["inputs"],"msg":check_lump["msg"],"currency":check_lump["currency"]}).encode()).hexdigest(),num_decode(check_lump["e"]),num_decode(check_lump["n"])):
         jlump=json.loads(double_quote(check_lump))
         all_txs=len(jlump["txs"])
         crt_txs=0
         tap=0
         going_tap=0
         spenttap=0
+        curr=check_lump["currency"]
         for x in jlump["inputs"]:
-            block_id=json.loads(open(f"utxo/{x}").read())["block"]
-            if block_id in total_longest:
-                tap+=ltz_round(utxo_value(x))
+            utxo_lump=json.loads(open(f"utxo/{x}").read())
+            if utxo_lump["block"] in total_longest:
+                if utxo_lump["currency"]==curr:
+                    tap+=ltz_round(utxo_value(x))
+                else:
+                    print(utxo_lump["currency"],curr)
         for x in jlump['txs']:
+            if ltz_round(x["amount"])==0.0:
+                return False
             if x['to']==address(num_decode(jlump["n"])):
                 spenttap+=ltz_round(x["amount"])
             else:
@@ -213,6 +244,7 @@ def verify_lump(check_lump,total_longest,verbose=False):
         else:
             if verbose:
                 print("TX's of this lump are not valid",crt_txs,all_txs)
+                print(spenttap,tap)
             return False
     else:
         if verbose:
@@ -223,21 +255,31 @@ def verify_lump(check_lump,total_longest,verbose=False):
 def handle_lump_io(check_lump,block_hash):
     check_lump=json.loads(double_quote(check_lump))
     gas=calculate_gas(check_lump)
+    lump_hash=sha256(str({"txs":check_lump["txs"],"inputs":check_lump["inputs"],"msg":check_lump["msg"]}).encode()).hexdigest()
     for x in check_lump["txs"]:
         gassed_amount=ltz_round(ltz_round((100-gas)/100)*ltz_round(x["amount"]))
-        lump_hash=sha256(str({"txs":check_lump["txs"],"inputs":check_lump["inputs"],"msg":check_lump["msg"]}).encode()).hexdigest()
         if x["to"]==address(num_decode(check_lump["n"])):
-            (query2.utxo_add(address(num_decode(check_lump["n"])),(sha256(double_quote(str({x["to"]:x["amount"],"block":block_hash,"lump":lump_hash})).encode()).hexdigest()),{x["to"]:ltz_round(x["amount"])}))
-            (query.add("utxo",sha256(double_quote(str({x["to"]:x["amount"],"block":block_hash,"lump":lump_hash})).encode()).hexdigest(),double_quote(str({x["to"]:ltz_round(x["amount"]),"block":block_hash,"lump":lump_hash}))))
+            utxo_name=sha256(double_quote(str({x["to"]:x["amount"],"currency":check_lump["currency"],"block":block_hash,"lump":lump_hash})).encode()).hexdigest()
+            query2.utxo_add(x["to"],utxo_name,currency=check_lump["currency"])
+            query.add("utxo",utxo_name,double_quote(str({x["to"]:ltz_round(x["amount"]),"currency":check_lump["currency"],"block":block_hash,"lump":lump_hash})))
+            print(utxo_name,"if made")
         else:
-            gassed_name=(sha256(double_quote(str({x["to"]:ltz_round(gassed_amount),"block":block_hash,"lump":lump_hash})).encode()).hexdigest())
-            if check_lump["msg"]!="":
-                (query2.contract_append({lump_hash:check_lump["msg"]}))
-            (query2.utxo_add(x["to"],gassed_name,{x["to"]:ltz_round(gassed_amount)}))
-            (query.add("utxo",gassed_name,double_quote(str({x["to"]:ltz_round(gassed_amount),"block":block_hash,"lump":lump_hash}))))
+            gassed_name=(sha256(double_quote(str({x["to"]:ltz_round(gassed_amount),"currency":check_lump["currency"],"block":block_hash,"lump":lump_hash})).encode()).hexdigest())
+            (query2.utxo_add(addr=x["to"],utxo=gassed_name,currency=check_lump["currency"]))
+            query.add("utxo",gassed_name,double_quote(str({x["to"]:ltz_round(gassed_amount),"currency":check_lump["currency"],"block":block_hash,"lump":lump_hash})))
+            print(gassed_name,"else made")
     for x in check_lump["inputs"]:
+        print(x,"removed")
         (query.remove("utxo",x))
-        (query2.utxo_remove(address(num_decode(check_lump["n"])),x))
+        query2.utxo_remove(address(num_decode(check_lump["n"])),x,currency=check_lump["currency"])
+    if check_lump["msg"]!="":
+        (query2.contract_append({lump_hash:check_lump["msg"]}))
+        if smart_contract_verify(check_lump["msg"]):
+            args=check_lump["msg"].split()
+            curr=args[3].upper()
+            utxo_name=(sha256(double_quote(str({address(num_decode(check_lump["n"])):float(args[4]),"currency":curr,"block":block_hash,"lump":lump_hash})).encode()).hexdigest())
+            query.add("utxo",utxo_name,double_quote({address(num_decode(check_lump["n"])):float(args[4]),"currency":curr,"block":block_hash,"lump":lump_hash}))
+            query2.utxo_add(address(num_decode(check_lump["n"])),utxo_name,currency=curr)
 
 
 def handle_block_io(block):
@@ -246,12 +288,13 @@ def handle_block_io(block):
     block=json.loads(double_quote(block))
     query.add("chain",block["hash"],double_quote(block))
     query2.append("chain",block["hash"],block["prev"])
-    utxo={block["miner"]:reward,"block":block["hash"]}
+    utxo={block["miner"]:reward,"currency":"LTZ","block":block["hash"]}
     query.add("utxo",sha256(double_quote(utxo).encode()).hexdigest(),double_quote(utxo))
-    query2.utxo_add(block["miner"],sha256(double_quote(utxo).encode()).hexdigest(),{block["miner"]:reward})
+    query2.utxo_add(block["miner"],sha256(double_quote(utxo).encode()).hexdigest(),currency="LTZ")
     query2.custom_append("timestamps",block["timestamp"])
+    bhash=block["hash"]
     for x in block["txlump"]:
-        handle_lump_io(x,block["hash"])
+        handle_lump_io(x,bhash)
 
 
 def check_all_lumps(trans):
@@ -342,10 +385,10 @@ def msg_filter(msg,query):
         return False
 
 
-def generate_inputs(n,topay):
+def generate_inputs(n,topay,utxs,currency="LTZ"):
     addr=address(n)
-    if balance(addr)>=ltz_round(topay):
-        allowed_inputs=utxos(addr)
+    if balance(addr,currency)>=ltz_round(topay):
+        allowed_inputs=utxs
         input_balances=[]
         for x in allowed_inputs:
             y=utxo_value(x)
@@ -374,22 +417,23 @@ def generate_inputs(n,topay):
         return False
 
 
-def workout_lump(topay,whom,d,e,n,msg=""):
+def workout_lump(topay,whom,d,e,n,msg="",currency="LTZ"):
     addr=address(n)
-    if utxos(addr)==[]:
+    utxs=utxos(addr,currency)
+    if utxs==[]:
         return False
-    inputs=generate_inputs(n,ltz_round(topay))
+    inputs=generate_inputs(n,ltz_round(topay),utxs,currency=currency)
     if inputs==False:
         return False
     tap=0
     for x in inputs:
         tap+=ltz_round(utxo_value(x))
     if ltz_round(tap)-ltz_round(topay)==0:
-        return lump([tx(whom,ltz_round(topay))],d,e,n,inputs,msg)
+        return lump([tx(whom,ltz_round(topay))],d,e,n,inputs,msg,currency=currency)
     else:
         a=tx(whom,ltz_round(topay))
         b=tx(addr,(ltz_round(tap)-ltz_round(topay)))
-        return lump([a,b],d,e,n,inputs,msg)
+        return lump([a,b],d,e,n,inputs,msg,currency=currency)
 
 
 def tx_base(tx_lump=[],is_genesis=False):
@@ -410,7 +454,10 @@ def verify_block(block):
         pass
     else:
         return False
-    last_prev=json.loads(double_quote(open("chain/"+get_building_hash()).read()))["prev"]
+    if str(get_building_hash())=="0":
+        last_prev=0
+    else:
+        last_prev=json.loads(double_quote(open("chain/"+get_building_hash()).read()))["prev"]
     if last_prev==0:
         pass
     elif block["height"]>=json.loads(double_quote(open("chain/"+last_prev).read()))["height"]:

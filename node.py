@@ -23,6 +23,7 @@ logovar="""""""""
 """""""""
 settings=None
 import json
+from locale import currency
 
 from query2.query2 import givedb
 def load_settings():
@@ -401,7 +402,7 @@ def send():
                 total_size=0
                 for x in true_lumps:
                     total_size+=len(str(x))
-                print(f"Size of Pool : {round(total_size/1024)} Kb")
+                print(f"Size of Pool : {(total_size/1024)} Kb")
 
             elif raw_msg=="network target" or raw_msg=="target":
                 print(get_target())
@@ -441,12 +442,15 @@ def send():
             elif raw_msg=="tx":
                 send_to=input("Receiver : ").replace(" ","")
                 amount=input("Amount (number) : ").replace(" ","")
+                curr=input("Currency ( LTZ default ) : ").upper()
+                if curr=="":
+                    curr="LTZ"
                 try:
                     float(amount)
                 except:
                     print("Invalid Amount")
                     continue
-                tx_lump_result=workout_lump(ltz_round(amount),send_to,d,e,n)
+                tx_lump_result=workout_lump(ltz_round(amount),send_to,d,e,n,currency=curr)
                 if tx_lump_result==False:
                     print("Invalid Lump Details!")
                 elif verify_lump(tx_lump_result,array_all_in_one(get_longest()),verbose=True)==False:
@@ -464,7 +468,7 @@ def send():
                 except:
                     print("Invalid Amount")
                     continue
-                tx_lump_result=workout_lump(ltz_round(amount),send_to,d,e,n,contract)
+                tx_lump_result=workout_lump(ltz_round(amount),send_to,d,e,n,msg=contract)
                 if tx_lump_result==False:
                     print("Invalid Lump Details!")
                 elif verify_lump(tx_lump_result,array_all_in_one(get_longest()),verbose=True)==False:
@@ -475,12 +479,35 @@ def send():
                     print("Broadcasted")
                     broadcast(tx_lump_result,type="lump")
             
+            elif raw_msg=="create token":
+                send_to=input("Contract Incentive Receiver : ").replace(" ","")
+                amount=0.1
+                token_name=input("Input ticker/name/symbol for your token : ")
+                total_supply=input("Enter the total supply for your token : ")
+                contract=f"_cmd_ token create {token_name} {float(total_supply)}"
+                tx_lump_result=workout_lump(ltz_round(amount),send_to,d,e,n,msg=contract)
+                if tx_lump_result==False:
+                    print("Invalid Lump Details!")
+                elif verify_lump(tx_lump_result,array_all_in_one(get_longest()),verbose=True)==False:
+                    print("Lump verification Failed")
+                else:
+                    tx_lump_result=json.loads(double_quote(tx_lump_result))
+                    print(f'Contract hash : {sha256(str({"txs":tx_lump_result["txs"],"inputs":tx_lump_result["inputs"],"msg":tx_lump_result["msg"]}).encode()).hexdigest()}')
+                    print("Broadcasted")
+                    broadcast(tx_lump_result,type="lump")
+
             elif raw_msg=="balance" or raw_msg=="bal":
-                print(f"Blockchain ->  Address : {node_addr}\n Balance : {balance(node_addr)} LTZ")
+                curr=input("Currency ( LTZ default ) : ").upper()
+                if curr=="":
+                    curr="LTZ"
+                print(f"Blockchain ->  Address : {node_addr}\n Balance : {balance(node_addr,currency=curr)} {curr}")
 
             elif raw_msg=="see bal" or raw_msg=="see balance":
                 check_addr=input("Enter Address : ").replace(" ","")
-                print(f"Blockchain{' -> {'}\n Address : {check_addr}\n Balance : {balance(check_addr)} LTZ"+"\n}")
+                curr=input("Currency ( LTZ default ) : ").upper()
+                if curr=="":
+                    curr="LTZ"
+                print(f"Blockchain{' -> {'}\n Address : {check_addr}\n Balance : {balance(check_addr,currency=curr)} {curr}"+"\n}")
             
             elif raw_msg=="mine":
                 miner_threads=True

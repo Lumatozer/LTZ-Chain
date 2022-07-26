@@ -81,12 +81,16 @@ def remove(dbname,key):
                 open(dbname,"w+").write(json.dumps(file))
                 return True
 
-def utxo_add(addr,utxo,data,currency="LTZ"):
+def utxo_add(addr,utxo,currency="LTZ"):
     if os.path.exists(f"bin/utxos/{currency}/{addr}"):
         fr=json.loads(get_file_read(f"bin/utxos/{currency}/{addr}"))
         pass
     else:
-        open(f"bin/utxos/{currency}/{addr}","a").close()
+        if os.path.exists(f"bin/utxos/{currency}"):
+            open(f"bin/utxos/{currency}/{addr}","a").close()
+        else:
+            os.mkdir(f"bin/utxos/{currency}")
+            open(f"bin/utxos/{currency}/{addr}","a").close()
         fr={"inputs":[]}
     fr["inputs"].append(utxo)
     with open(f"bin/utxos/{currency}/{addr}","w+") as fw:
@@ -94,9 +98,6 @@ def utxo_add(addr,utxo,data,currency="LTZ"):
 
 def utxo_remove(addr,utxo,currency="LTZ"):
     fr=json.loads(get_file_read(f"bin/utxos/{currency}/{addr}"))
-    try:
-        fr["inputs"].remove(utxo)
-    except:
-        pass
+    fr["inputs"].remove(utxo)
     with open(f"bin/utxos/{currency}/{addr}","w+") as fw:
         fw.write(str(fr).replace("'",'"'))

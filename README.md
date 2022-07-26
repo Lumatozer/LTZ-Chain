@@ -44,7 +44,7 @@ World's first fully decentralized light-weight multi-purpose python based blockc
 16. Added float LTZ exchanging for sending money in small bits till 8 decimals.
 17. Added 512 characters plain-text contracts for permanent storage on the blockchain.
 18. Gas fees calculated on the basis of how long of a contract has been written (1% TX fees at max limit of 512 characters).
-
+19. Support for creating currencies added. Anyone can create their own currencies with just 0.0001 LTZ! All new currencies can be circulated, transferred and exchanged just like LTZ.
 Read more at https://aaravdayal.com/
 
 ## Installation
@@ -146,9 +146,17 @@ To view a contract:
 ```bash
 Node >> view contract
 ```
+To create your own token:
+```bash
+Node >> create token
+```
 Typing anything else except these commands will send it as a message to all nodes if messaging is enabled (default)
 # Others
-Keypairs are stored in the same directory as the node.pyc file as "den.alukeys"
+To create your own CryptoToken without using commands : \
+1. Issue a contract.\
+2. In the text field of the contract type _cmd_ token create {name_of_token} {total_supply}\
+3. Publish your contract and as soon as it is included in a block your currency will be established and recognized by the blockchain.\
+NOTE : The name of the token cannot be longer than 6 characters and should be in uppercase.
 ### To change the keys.
 1. Replace the keypair file with a different keypair in the correct format.\
 OR
