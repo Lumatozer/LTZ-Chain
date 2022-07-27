@@ -185,7 +185,7 @@ class lump:
         return str({"txs":self.txs,"inputs":self.inputs,"msg":self.msg,"currency":self.currency,"e":self.e,"n":self.n,"sign":self.sign})
 
 
-def smart_contract_verify(msg):
+def cmd_contract_verify(msg):
     args=msg.split()
     if len(args)!=0:
         if args[0]=="_cmd_":
@@ -271,7 +271,7 @@ def handle_lump_io(check_lump,block_hash):
         query2.utxo_remove(address(num_decode(check_lump["n"])),x,currency=check_lump["currency"])
     if check_lump["msg"]!="":
         (query2.contract_append({lump_hash:check_lump["msg"]}))
-        if smart_contract_verify(check_lump["msg"]):
+        if cmd_contract_verify(check_lump["msg"]):
             args=check_lump["msg"].split()
             curr=args[3].upper()
             utxo_name=(sha256(double_quote(str({address(num_decode(check_lump["n"])):float(args[4]),"currency":curr,"block":block_hash,"lump":lump_hash})).encode()).hexdigest())
