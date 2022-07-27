@@ -58,8 +58,8 @@ def generate_primes(n):
 			continue
 		else:
 			return prime_candidate
-def address(n):
-    return sha256(sha256(str(n).encode()).hexdigest().encode()).hexdigest()
+def address(e,n):
+    return sha256(sha256(f"{str(e)},{str(n)}".encode()).hexdigest().encode()).hexdigest()
 def make_kp(bits=256):
     p=generate_primes(bits)
     q=generate_primes(bits)
@@ -69,7 +69,7 @@ def make_kp(bits=256):
         if gcd(e, (p - 1) * (q - 1)) == 1:
             break
     d=findModInverse(e, (p - 1) * (q - 1))
-    return d,e,n,address(n)
+    return d,e,n,address(e,n)
 
 def signature(hash,d,n):
     bytedhash = int.from_bytes(bytes.fromhex(hash), byteorder='big')
@@ -91,7 +91,7 @@ def load():
             d=int(a.split(",")[0])
             e=int(a.split(",")[1])
             n=int(a.split(",")[2])
-            return d,e,n,address(n)
+            return d,e,n,address(e,n)
     except:
         print("Generating 256-bit KeyPair for you.\nPlease be patient...")
         newkeyd,newkeye,newkeyn,addr=make_kp()

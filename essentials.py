@@ -1,4 +1,4 @@
-from ast import arg
+from alursa import address
 from hashlib import sha256
 import traceback
 from aludbms import query
@@ -228,7 +228,7 @@ def verify_lump(check_lump,total_longest,verbose=False):
         for x in jlump['txs']:
             if ltz_round(x["amount"])==0.0:
                 return False
-            if x['to']==address(num_decode(jlump["n"])):
+            if x['to']==address(num_decode(jlump["e"]),num_decode(jlump["n"])):
                 spenttap+=ltz_round(x["amount"])
             else:
                 spenttap+=ltz_round(x["amount"])
@@ -258,7 +258,7 @@ def handle_lump_io(check_lump,block_hash):
     lump_hash=sha256(str({"txs":check_lump["txs"],"inputs":check_lump["inputs"],"msg":check_lump["msg"]}).encode()).hexdigest()
     for x in check_lump["txs"]:
         gassed_amount=ltz_round(ltz_round((100-gas)/100)*ltz_round(x["amount"]))
-        if x["to"]==address(num_decode(check_lump["n"])):
+        if x["to"]==address(num_decode(check_lump["e"]),num_decode(check_lump["n"])):
             utxo_name=sha256(double_quote(str({x["to"]:x["amount"],"currency":check_lump["currency"],"block":block_hash,"lump":lump_hash})).encode()).hexdigest()
             query2.utxo_add(x["to"],utxo_name,currency=check_lump["currency"])
             query.add("utxo",utxo_name,double_quote(str({x["to"]:ltz_round(x["amount"]),"currency":check_lump["currency"],"block":block_hash,"lump":lump_hash})))
@@ -268,15 +268,15 @@ def handle_lump_io(check_lump,block_hash):
             query.add("utxo",gassed_name,double_quote(str({x["to"]:ltz_round(gassed_amount),"currency":check_lump["currency"],"block":block_hash,"lump":lump_hash})))
     for x in check_lump["inputs"]:
         (query.remove("utxo",x))
-        query2.utxo_remove(address(num_decode(check_lump["n"])),x,currency=check_lump["currency"])
+        query2.utxo_remove(address(num_decode(check_lump["e"]),num_decode(check_lump["n"])),x,currency=check_lump["currency"])
     if check_lump["msg"]!="":
         (query2.contract_append({lump_hash:check_lump["msg"]}))
         if cmd_contract_verify(check_lump["msg"]):
             args=check_lump["msg"].split()
             curr=args[3].upper()
-            utxo_name=(sha256(double_quote(str({address(num_decode(check_lump["n"])):float(args[4]),"currency":curr,"block":block_hash,"lump":lump_hash})).encode()).hexdigest())
-            query.add("utxo",utxo_name,double_quote({address(num_decode(check_lump["n"])):float(args[4]),"currency":curr,"block":block_hash,"lump":lump_hash}))
-            query2.utxo_add(address(num_decode(check_lump["n"])),utxo_name,currency=curr)
+            utxo_name=(sha256(double_quote(str({address(num_decode(check_lump["e"]),num_decode(check_lump["n"])):float(args[4]),"currency":curr,"block":block_hash,"lump":lump_hash})).encode()).hexdigest())
+            query.add("utxo",utxo_name,double_quote({address(num_decode(check_lump["e"]),num_decode(check_lump["n"])):float(args[4]),"currency":curr,"block":block_hash,"lump":lump_hash}))
+            query2.utxo_add(address(num_decode(check_lump["e"]),num_decode(check_lump["n"])),utxo_name,currency=curr)
 
 
 def handle_block_io(block):
@@ -360,8 +360,6 @@ def mine(trans,pkey,coinbase: str):
     return trans
 
 
-def address(n):
-    return sha256(sha256(str(n).encode()).hexdigest().encode()).hexdigest()
 
 
 def msg_gen(data,uid,type):
@@ -382,8 +380,8 @@ def msg_filter(msg,query):
         return False
 
 
-def generate_inputs(n,topay,utxs,currency="LTZ"):
-    addr=address(n)
+def generate_inputs(e,n,topay,utxs,currency="LTZ"):
+    addr=address(e,n)
     if balance(addr,currency)>=ltz_round(topay):
         allowed_inputs=utxs
         input_balances=[]
@@ -415,11 +413,11 @@ def generate_inputs(n,topay,utxs,currency="LTZ"):
 
 
 def workout_lump(topay,whom,d,e,n,msg="",currency="LTZ"):
-    addr=address(n)
+    addr=address(e,n)
     utxs=utxos(addr,currency)
     if utxs==[]:
         return False
-    inputs=generate_inputs(n,ltz_round(topay),utxs,currency=currency)
+    inputs=generate_inputs(e,n,ltz_round(topay),utxs,currency=currency)
     if inputs==False:
         return False
     tap=0
