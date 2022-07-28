@@ -44,7 +44,7 @@ World's first fully decentralized light-weight multi-purpose python based blockc
 17. Added 512 characters plain-text contracts for permanent storage on the blockchain.
 18. Gas fees calculated on the basis of how long of a contract has been written (1% TX fees at max limit of 512 characters).
 19. Support for creating currencies added. Anyone can create their own currencies with just 0.0001 LTZ! All new currencies can be circulated, transferred and exchanged just like LTZ.
-Read more at https://aaravdayal.com/
+Read more at https://lumatozer.net/
 
 ## Installation
 ```bash
