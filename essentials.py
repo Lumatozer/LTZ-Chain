@@ -280,11 +280,8 @@ def handle_lump_io(check_lump,block_hash):
 
 
 def handle_block_io(block):
-    branch_save(block)
     reward=1
     block=json.loads(double_quote(block))
-    query.add("chain",block["hash"],double_quote(block))
-    query2.append("chain",block["hash"],block["prev"])
     utxo={block["miner"]:reward,"currency":"LTZ","block":block["hash"]}
     query.add("utxo",sha256(double_quote(utxo).encode()).hexdigest(),double_quote(utxo))
     query2.utxo_add(block["miner"],sha256(double_quote(utxo).encode()).hexdigest(),currency="LTZ")
@@ -435,7 +432,8 @@ def tx_base(tx_lump=[],is_genesis=False):
     if is_genesis:
         return {"height":1,"prev":0,"contracts":[],"timestamp":unix_time(),"txlump":tx_lump}
     bhash=get_building_hash()
-    return {"height":json.loads(double_quote(open("chain/"+bhash).read()))["height"]+1,"prev":bhash,"contracts":[],"timestamp":unix_time(),"txlump":tx_lump}
+    last_height=int(query2.get_file_read("bin/top.chain").split(",")[0].split("->")[1])
+    return {"height":last_height+1,"prev":bhash,"contracts":[],"timestamp":unix_time(),"txlump":tx_lump}
 
 
 def verify_block(block):

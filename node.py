@@ -23,9 +23,8 @@ logovar="""""""""
 """""""""
 settings=None
 import json
-from locale import currency
 
-from query2.query2 import givedb
+from query2.query2 import get_file_read, givedb
 def load_settings():
     global settings
     try:
@@ -61,6 +60,24 @@ msg_used=[]
 in_sync={}
 true_lumps=[]
 true_contracts=[]
+mined_blocks=[]
+
+def push_blocks_to_storage():
+    global mined_blocks
+    mined_2=mined_blocks.copy()
+    top_blocks=get_file_read("bin/top.chain")
+    if len(top_blocks.split(","))==1:
+        longest_chain=array_all_in_one(get_longest())
+        for x in mined_blocks:
+            if int(top_blocks.split(",")[0].split("->")[1])-x["height"]>2:
+                if x["hash"] in longest_chain:
+                    handle_block_io(x)
+                    mined_2.remove(x)
+                    print(f"Block {x['hash']} was confirmed.")
+                else:
+                    mined_2.remove(x)
+                    print(f"Block {x['hash']} was found to be an uncle.")
+    mined_blocks=mined_2
 
 
 def remove_overlapping():
@@ -151,7 +168,7 @@ def broadcast(raw_msg,type="msg",append=False):
 
 def client_handeler(client):
     cc=client
-    global allc,verbose,true_lumps,used,initial_sync
+    global allc,verbose,true_lumps,used,initial_sync,mined_blocks,sys_verbose
     while True:
         try:
             to_relay=True
@@ -216,9 +233,16 @@ def client_handeler(client):
                                     true_lumps.remove(x)
                             block_json=json.loads(double_quote(data))
                             print(f"Block: hash: {block_json['hash']} height: {block_json['height']} TX's: {len(block_json['txlump'])} miner: {block_json['miner']} nonce: {block_json['nonce']} coinbase: {block_json['coinbase']}")
-                            handle_block_io(double_quote(data))
+                            
+                            mined_blocks.append(block_json)
+                            push_blocks_to_storage()
+
+                            branch_save(block_json)
+                            query2.append("chain",block_json["hash"],block_json["prev"])
+                            query.add("chain",block_json["hash"],double_quote(block_json))
                         else:
-                            print("False Block")
+                            if sys_verbose:
+                                print("False Block was broadcasted.")
                     except:
                         if sys_verbose:
                             traceback.print_exc()
@@ -286,6 +310,9 @@ def client_handeler(client):
                                 if verify_block(uwu) and uwu["prev"]==last:
                                     last=uwu["hash"]
                                     print(f"Block {bls} Received!")
+                                    branch_save(uwu)
+                                    query2.append("chain",uwu["hash"],uwu["prev"])
+                                    query.add("chain",uwu["hash"],double_quote(uwu))
                                     handle_block_io(uwu)
                                     bls+=1
                                 else:
@@ -579,7 +606,8 @@ def loop_mine_thread():
             try:
                 base_mineempty()
             except:
-                continue
+                if sys_verbose:
+                    print(traceback.print_exc())
 
 
 t2=threading.Thread(target=send)

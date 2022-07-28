@@ -127,13 +127,13 @@ def is_chain_empty():
 
 def branch_save(block):
     while True:
-            with open("bin/top.chain") as fw:
-                last_height=int(fw.read().split(",")[0].split("->")[1])
-            if last_height!="":
-                break
-            else:
-                time.sleep(0.1)
-                continue
+        with open("bin/top.chain") as fw:
+            last_height=int(fw.read().split(",")[0].split("->")[1])
+        if last_height!="":
+            break
+        else:
+            time.sleep(0.1)
+            continue
     block=json.loads(str(block).replace("'",'"'))
     if block["height"]>last_height:
         b_hash=block["hash"]
