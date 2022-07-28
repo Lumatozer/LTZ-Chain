@@ -101,3 +101,29 @@ def utxo_remove(addr,utxo,currency="LTZ"):
     fr["inputs"].remove(utxo)
     with open(f"bin/utxos/{currency}/{addr}","w+") as fw:
         fw.write(str(fr).replace("'",'"'))
+
+def nft_add(addr,nft_hash):
+    currency="NFT"
+    if os.path.exists(f"bin/{currency}/{addr}"):
+        fr=json.loads(get_file_read(f"bin/{currency}/{addr}"))
+        pass
+    else:
+        if os.path.exists(f"bin/{currency}"):
+            open(f"bin/{currency}/{addr}","a").close()
+        else:
+            os.mkdir(f"bin/{currency}")
+            open(f"bin/{currency}/{addr}","a").close()
+        fr={"inputs":[]}
+    fr["inputs"].append(nft_hash)
+    with open(f"bin/{currency}/{addr}","w+") as fw:
+        fw.write(str(fr).replace("'",'"'))
+
+def nft_remove(addr,nft_hash):
+    currency="NFT"
+    fr=json.loads(get_file_read(f"bin/{currency}/{addr}"))
+    fr["inputs"].remove(nft_hash)
+    if fr["inputs"]==[]:
+        os.remove(f"bin/{currency}/{addr}")
+    else:
+        with open(f"bin/{currency}/{addr}","w+") as fw:
+            fw.write(str(fr).replace("'",'"'))

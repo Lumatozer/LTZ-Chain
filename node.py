@@ -64,14 +64,16 @@ mined_blocks=[]
 
 def push_blocks_to_storage():
     global mined_blocks
+    last_handle=json.loads(open(f'chain/{get_file_read("bin/last_handled")}').read())["height"]
     mined_2=mined_blocks.copy()
     top_blocks=get_file_read("bin/top.chain")
     if len(top_blocks.split(","))==1:
         longest_chain=array_all_in_one(get_longest())
         for x in mined_blocks:
             if int(top_blocks.split(",")[0].split("->")[1])-x["height"]>2:
-                if x["hash"] in longest_chain:
-                    handle_block_io(x)
+                if x["hash"] in longest_chain and (x["hash"]!=get_file_read("bin/last_handled")):
+                    if x["height"]>=last_handle:
+                        handle_block_io(x)
                     mined_2.remove(x)
                     print(f"Block {x['hash']} was confirmed.")
                 else:
@@ -277,7 +279,7 @@ def client_handeler(client):
                 
                 elif msg_filter(received_msg, "type")=="sending_sync":
                     bls=0
-                    last=get_building_hash()
+                    last=open("bin/last_handled").read()
                     print(arrow_msg_gen("Sync Thread"," Syncing Initialized!"))
                     while True:
                         uwu=client.recv(11485760).decode()
@@ -382,7 +384,7 @@ def send():
                     if is_chain_empty():
                         lb=0
                     else:
-                        lb=get_building_hash()
+                        lb=open("bin/last_handled").read()
                     msg=double_quote(msgen(lb,uid,"sync_req"))
                     sync_client.send(str(len(msg.encode())).encode())
                     sync_client.send(msg.encode())
@@ -405,7 +407,7 @@ def send():
                     if is_chain_empty():
                         lb=0
                     else:
-                        lb=get_building_hash()
+                        lb=open("bin/last_handled").read()
                     msg=double_quote(msgen(lb,uid,"sync_req"))
                     sync_client.send(str(len(msg.encode())).encode())
                     sync_client.send(msg.encode())
@@ -416,7 +418,7 @@ def send():
                 if is_chain_empty():
                     lb=0
                 else:
-                    lb=get_building_hash()
+                    lb=open("bin/last_handled").read()
                 msg=double_quote(msgen(lb,uid,"sync_req"))
                 sync_client.send(str(len(msg.encode())).encode())
                 sync_client.send(msg.encode())
@@ -433,6 +435,16 @@ def send():
 
             elif raw_msg=="network target" or raw_msg=="target":
                 print(get_target())
+            
+            elif raw_msg=="nfts":
+                if os.path.exists(f"bin/NFT/{node_addr}"):
+                    print("-----------------------------------NFT's-----------------------------------")
+                    for x in json.loads(get_file_read(f"bin/NFT/{node_addr}"))["inputs"]:
+                        print(f" # : {x}")
+                    print("-"*75)
+                else:
+                    print("You currently don't own any NFT's")
+            
             
             elif raw_msg=="sys verbose":
                 if sys_verbose==False:
@@ -523,6 +535,54 @@ def send():
                 else:
                     tx_lump_result=json.loads(double_quote(tx_lump_result))
                     print(f'Contract hash : {sha256(str({"txs":tx_lump_result["txs"],"inputs":tx_lump_result["inputs"],"msg":tx_lump_result["msg"]}).encode()).hexdigest()}')
+                    print("Broadcasted")
+                    broadcast(tx_lump_result,type="lump")
+            
+            elif raw_msg=="send nft":
+                send_to=input("NFT Receiver : ").replace(" ","")
+                amount=0.1
+                nft_hash=input("Input the hash for your NFT : ")
+                if os.path.exists(f"nfts/{nft_hash}") and json.loads(get_file_read(f"nfts/{nft_hash}"))["owner"]==node_addr:
+                    pass
+                else:
+                    print("Invalid NFT Provided")
+                    continue
+                contract=f"_cmd_ nft send {nft_hash} {send_to}"
+                if cmd_contract_verify(contract,node_addr):
+                    pass
+                else:
+                    print("Error while verifying contract")
+                    continue
+                tx_lump_result=workout_lump(ltz_round(amount),send_to,d,e,n,msg=contract)
+                if tx_lump_result==False:
+                    print("Invalid Lump Details!")
+                elif verify_lump(tx_lump_result,array_all_in_one(get_longest()),verbose=True)==False:
+                    print("Lump verification Failed")
+                else:
+                    tx_lump_result=json.loads(double_quote(tx_lump_result))
+                    print(f'Contract hash : {sha256(str({"txs":tx_lump_result["txs"],"inputs":tx_lump_result["inputs"],"msg":tx_lump_result["msg"]}).encode()).hexdigest()}')
+                    print("Broadcasted")
+                    broadcast(tx_lump_result,type="lump")
+            
+            elif raw_msg=="mint nft":
+                send_to=input("Contract Incentive Receiver : ").replace(" ","")
+                amount=0.1
+                nft_url=input("Input the URL for your NFT : ")
+                contract=f"_cmd_ nft mint {nft_url}"
+                if cmd_contract_verify(contract,node_addr):
+                    pass
+                else:
+                    print("Error while verifying contract")
+                    continue
+                tx_lump_result=workout_lump(ltz_round(amount),send_to,d,e,n,msg=contract)
+                if tx_lump_result==False:
+                    print("Invalid Lump Details!")
+                elif verify_lump(tx_lump_result,array_all_in_one(get_longest()),verbose=True)==False:
+                    print("Lump verification Failed")
+                else:
+                    tx_lump_result=json.loads(double_quote(tx_lump_result))
+                    print(f'Contract hash : {sha256(str({"txs":tx_lump_result["txs"],"inputs":tx_lump_result["inputs"],"msg":tx_lump_result["msg"]}).encode()).hexdigest()}')
+                    print(f"NFT Hash : {sha256(nft_url.encode()).hexdigest()}")
                     print("Broadcasted")
                     broadcast(tx_lump_result,type="lump")
 

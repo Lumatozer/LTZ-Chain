@@ -184,8 +184,17 @@ class lump:
     def __repr__(self):
         return str({"txs":self.txs,"inputs":self.inputs,"msg":self.msg,"currency":self.currency,"e":self.e,"n":self.n,"sign":self.sign})
 
+def is_url(url):
+    try:
+        from urllib.parse import urlparse
+        urlparse(url)
+        if urlparse(url).hostname==None and url[-1:]!="/" and url[-1:]!="\\":
+            return False
+        return True
+    except:
+        return False
 
-def cmd_contract_verify(msg):
+def cmd_contract_verify(msg,sender):
     args=msg.split()
     if len(args)!=0:
         if args[0]=="_cmd_":
@@ -194,6 +203,13 @@ def cmd_contract_verify(msg):
                     if len(args[3])>0 and len(args[3])<7 and args[3]==args[3].upper() and os.path.exists(f"bin/utxos/{args[3]}")==False:
                         if is_digit(args[4]):
                             return True
+            elif args[1]=="nft":
+                if args[2]=="mint":
+                    if is_url(args[3]) and os.path.exists(f'bin/nfts/{sha256(f"{args[3]}".encode()).hexdigest()}')==False:
+                        return True
+                elif args[2]=="send":
+                    if os.path.exists(f"nfts/{args[3]}") and json.loads(query2.get_file_read(f"nfts/{args[3]}"))["owner"]==sender:
+                        return True
     return False
 
 
@@ -256,9 +272,10 @@ def handle_lump_io(check_lump,block_hash):
     check_lump=json.loads(double_quote(check_lump))
     gas=calculate_gas(check_lump)
     lump_hash=sha256(str({"txs":check_lump["txs"],"inputs":check_lump["inputs"],"msg":check_lump["msg"]}).encode()).hexdigest()
+    lump_sender=address(num_decode(check_lump["e"]),num_decode(check_lump["n"]))
     for x in check_lump["txs"]:
         gassed_amount=ltz_round(ltz_round((100-gas)/100)*ltz_round(x["amount"]))
-        if x["to"]==address(num_decode(check_lump["e"]),num_decode(check_lump["n"])):
+        if x["to"]==lump_sender:
             utxo_name=sha256(double_quote(str({x["to"]:x["amount"],"currency":check_lump["currency"],"block":block_hash,"lump":lump_hash})).encode()).hexdigest()
             query2.utxo_add(x["to"],utxo_name,currency=check_lump["currency"])
             query.add("utxo",utxo_name,double_quote(str({x["to"]:ltz_round(x["amount"]),"currency":check_lump["currency"],"block":block_hash,"lump":lump_hash})))
@@ -268,15 +285,28 @@ def handle_lump_io(check_lump,block_hash):
             query.add("utxo",gassed_name,double_quote(str({x["to"]:ltz_round(gassed_amount),"currency":check_lump["currency"],"block":block_hash,"lump":lump_hash})))
     for x in check_lump["inputs"]:
         (query.remove("utxo",x))
-        query2.utxo_remove(address(num_decode(check_lump["e"]),num_decode(check_lump["n"])),x,currency=check_lump["currency"])
+        query2.utxo_remove(lump_sender,x,currency=check_lump["currency"])
     if check_lump["msg"]!="":
         (query2.contract_append({lump_hash:check_lump["msg"]}))
-        if cmd_contract_verify(check_lump["msg"]):
+        if cmd_contract_verify(check_lump["msg"],lump_sender):
             args=check_lump["msg"].split()
-            curr=args[3].upper()
-            utxo_name=(sha256(double_quote(str({address(num_decode(check_lump["e"]),num_decode(check_lump["n"])):float(args[4]),"currency":curr,"block":block_hash,"lump":lump_hash})).encode()).hexdigest())
-            query.add("utxo",utxo_name,double_quote({address(num_decode(check_lump["e"]),num_decode(check_lump["n"])):float(args[4]),"currency":curr,"block":block_hash,"lump":lump_hash}))
-            query2.utxo_add(address(num_decode(check_lump["e"]),num_decode(check_lump["n"])),utxo_name,currency=curr)
+            if args[1]=="token":
+                curr=args[3].upper()
+                utxo_name=(sha256(double_quote(str({lump_sender:float(args[4]),"currency":curr,"block":block_hash,"lump":lump_hash})).encode()).hexdigest())
+                query.add("utxo",utxo_name,double_quote({lump_sender:float(args[4]),"currency":curr,"block":block_hash,"lump":lump_hash}))
+                query2.utxo_add(lump_sender,utxo_name,currency=curr)
+            elif args[1]=="nft":
+                if args[2]=="mint":
+                    open(f"nfts/{sha256(args[3].encode()).hexdigest()}","a").write(double_quote({"owner":lump_sender,"url":args[3]}))
+                    query2.nft_add(lump_sender,sha256(args[3].encode()).hexdigest())
+                elif args[2]=="send":
+                    if json.loads(open(f"nfts/{args[3]}").read())["owner"]==lump_sender:
+                        current_state_nft=json.loads(open(f"nfts/{args[3]}").read())
+                        current_state_nft["owner"]=args[4]
+                        open(f"nfts/{args[3]}","w+").write(double_quote(current_state_nft))
+                        query2.nft_add(args[4],args[3])
+                        query2.nft_remove(lump_sender,args[3])
+
 
 
 def handle_block_io(block):
@@ -287,6 +317,7 @@ def handle_block_io(block):
     query2.utxo_add(block["miner"],sha256(double_quote(utxo).encode()).hexdigest(),currency="LTZ")
     query2.custom_append("timestamps",block["timestamp"])
     bhash=block["hash"]
+    open("bin/last_handled","w+").write(block["hash"])
     for x in block["txlump"]:
         handle_lump_io(x,bhash)
 
@@ -355,8 +386,6 @@ def mine(trans,pkey,coinbase: str):
     trans["hash"]=sha256(double_quote(base).encode()).hexdigest()
     trans["nonce"]=base["nonce"]
     return trans
-
-
 
 
 def msg_gen(data,uid,type):
