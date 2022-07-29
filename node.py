@@ -23,6 +23,7 @@ logovar="""""""""
 """""""""
 settings=None
 import json
+import webbrowser
 
 from query2.query2 import get_file_read, givedb
 def load_settings():
@@ -587,7 +588,18 @@ def send():
                     print(f"NFT Hash : {sha256(nft_url.encode()).hexdigest()}")
                     print("Broadcasted")
                     broadcast(tx_lump_result,type="lump")
-
+            elif raw_msg=="view nft":
+                viewer_html=get_file_read("bin/view_nft.html")
+                file_hash=input("NFT Hash : ")
+                if os.path.exists(f"nfts/{file_hash}"):
+                    nft_file=json.loads(get_file_read(f"nfts/{file_hash}"))
+                    open("bin/view_nft.html","w+").write(viewer_html.replace("image_url",nft_file["url"]).replace("address",nft_file["owner"]))
+                    webbrowser.open(os.path.abspath("bin/view_nft.html"))
+                    time.sleep(0.5)
+                    open("bin/view_nft.html","w+").write(viewer_html.replace(nft_file["url"],"image_url").replace(nft_file["owner"],"address"))
+                else:
+                    print("NFT does not exist")
+                    continue
             elif raw_msg=="balance" or raw_msg=="bal":
                 curr=input("Currency ( LTZ default ) : ").upper()
                 if curr=="":
