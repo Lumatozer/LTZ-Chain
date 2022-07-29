@@ -280,6 +280,7 @@ def client_handeler(client):
                 elif msg_filter(received_msg, "type")=="sending_sync":
                     bls=0
                     last=open("bin/last_handled").read()
+                    mined_chain=array_all_in_one(get_longest())
                     print(arrow_msg_gen("Sync Thread"," Syncing Initialized!"))
                     while True:
                         uwu=client.recv(11485760).decode()
@@ -313,13 +314,14 @@ def client_handeler(client):
                                     last=uwu["hash"]
                                     print(f"Block {bls} Received!")
                                     branch_save(uwu)
-                                    query2.append("chain",uwu["hash"],uwu["prev"])
-                                    query.add("chain",uwu["hash"],double_quote(uwu))
+                                    if uwu["hash"] not in mined_chain:
+                                        query2.append("chain",uwu["hash"],uwu["prev"])
+                                        query.add("chain",uwu["hash"],double_quote(uwu))
                                     handle_block_io(uwu)
                                     bls+=1
                                 else:
                                     if sys_verbose:
-                                        print(uwu)
+                                        print(uwu,last)
                                     print("Invalid block received!")
                                     if uwu["prev"]!=last:
                                         print("Syncer node sending invalid block series! Immediately Stopping Sync.")
