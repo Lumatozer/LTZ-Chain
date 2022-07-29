@@ -264,14 +264,14 @@ def client_handeler(client):
                     for x in longest_branch:
                         if start_sending:
                             sleep(0.1)
-                            with open(f"chain\\{x[1]}") as uwu:
-                                client.send((uwu.read()).encode())
+                            with open(f"chain/{x[1]}") as uwu:
+                                client.send(json.dumps(json.loads(uwu.read())).encode())
                         else:
                             if str(x[0])==str(data):
                                 start_sending=True
                                 sleep(0.1)
-                                with open(f"chain\\{x[1]}") as uwu:
-                                    client.send((uwu.read()).encode())
+                                with open(f"chain/{x[1]}") as uwu:
+                                    client.send(json.dumps(json.loads(uwu.read())).encode())
                     sleep(0.3)
                     client.send("sync_end".encode())
                     print(arrow_msg_gen("Sync Thread"," Sync complete"))
