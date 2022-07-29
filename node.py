@@ -236,10 +236,9 @@ def client_handeler(client):
                                     true_lumps.remove(x)
                             block_json=json.loads(double_quote(data))
                             print(f"Block: hash: {block_json['hash']} height: {block_json['height']} TX's: {len(block_json['txlump'])} miner: {block_json['miner']} nonce: {block_json['nonce']} coinbase: {block_json['coinbase']}")
-                            
-                            mined_blocks.append(block_json)
-                            push_blocks_to_storage()
-
+                            if block_json not in mined_blocks:
+                                mined_blocks.append(block_json)
+                                push_blocks_to_storage()
                             branch_save(block_json)
                             query2.append("chain",block_json["hash"],block_json["prev"])
                             query.add("chain",block_json["hash"],double_quote(block_json))
